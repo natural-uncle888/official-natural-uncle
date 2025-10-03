@@ -17,27 +17,5 @@
     "pinned": false,
     "startsAt": "2025-09-10",
     "endsAt": "2025-10-07"
-  },
-  {
-    "id": "promo-202509",
-    "type": "promo",
-    "badge": "讚",
-    "title": "官方網站正式上線 ！",
-    "period": "2025/010/01 – 2025/09/30",
-    "summary": "一同歡樂贈服務～",
-    "bullets": [
-      "所贈服務，適用於 <strong>分離式</strong> 與 <strong>吊隱式</strong> 室內機型。",
-      "清洗保養冷氣室內機",
-      "送您防霉噴劑揪開心",
-      "限時優惠，趕緊預約清洗！\n\n\n\n\n"
-    ],
-    "cta": {
-      "text": "",
-      "href": ""
-    },
-    "pinned": true,
-    "startsAt": "2025-10-01",
-    "endsAt": "2025-10-30",
-    "summaryButtonText": "贈送內容"
   }
 ]
