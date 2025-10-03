@@ -6,9 +6,8 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>最新消息｜公告管理</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-<script defer>
-// === injected: loader & downloader ===
+  <script src="https://cdn.tailwindcss.com">
+    // === injected: loader & downloader ===
     async function loadFromServer(){
       try{
         const url = (window.NEWS_JSON_URL || '/news.json') + (window.NEWS_JSON_URL?.includes('?') ? '&' : '?') + 't=' + Date.now();
@@ -196,8 +195,8 @@
     }
   });
 })();
-</script>
 
+</script>
   <style>
     .badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:9999px;background:#f59e0b;color:#fff;font-size:12px}
     .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
@@ -490,71 +489,125 @@
       e.target.value='';
     });
   
-// --- injected: preview renderer ---
-if (typeof currentPreviewIndex === 'undefined') { var currentPreviewIndex = null; }
 
-function renderPreview(idx){
-  const pane = document.getElementById('preview');
-  const tpl = document.getElementById('previewTpl');
-  if(!pane || !tpl){ return; }
-  const it = (Array.isArray(items) ? items[idx] : null);
-  if(!it){
-    pane.innerHTML = '<p class="text-slate-500 text-sm">尚未選擇預覽項目。</p>';
-    return;
-  }
 
-  const node = tpl.content.cloneNode(true);
-
-  // 填入資料
-  const get = sel => node.querySelector(sel);
-  const badgeEl = node.querySelector('.badge');
-  if(badgeEl) badgeEl.textContent = it.badge || '告';
-
-  const typeEl = get('[data-field="type"]');
-  if(typeEl) typeEl.textContent = it.type || 'announce';
-
-  const titleEl = get('[data-field="title"]');
-  if(titleEl) titleEl.textContent = it.title || '';
-
-  // 期間優先使用 startsAt ~ endsAt，否則使用 period
-  const periodEl = get('[data-field="period"]');
-  if(periodEl){
-    let periodStr = '';
-    if(it.startsAt || it.endsAt){
-      const s = it.startsAt || '';
-      const e = it.endsAt || '';
-      periodStr = (s && e) ? `${s} ~ ${e}` : (s || e);
-    } else if (it.period){
-      periodStr = it.period;
-    }
-    periodEl.textContent = periodStr;
-  }
-
-  const summaryEl = get('[data-field="summary"]');
-  if(summaryEl) summaryEl.textContent = it.summary || '';
-
-  const bulletsEl = get('[data-field="bullets"]');
-  if(bulletsEl){
-    bulletsEl.innerHTML = '';
-    const bullets = Array.isArray(it.bullets) ? it.bullets : [];
-    bullets.forEach(txt=>{
-      const li = document.createElement('li');
-      li.textContent = txt;
-      bulletsEl.appendChild(li);
-    });
-  }
-
-  const ctaEl = get('[data-field="cta"]');
-  if(ctaEl){
-    const text = (it.cta && it.cta.text) ? it.cta.text : (it.summaryButtonText || '查看內容');
-    const href = (it.cta && it.cta.href) ? it.cta.href : '#';
-    ctaEl.textContent = text;
-    ctaEl.setAttribute('href', href || '#');
-  }
-
-  pane.innerHTML = '';
-  pane.appendChild(node);
+function showUploadStatus(kind, msg){
+  const box = document.getElementById('uploadStatus');
+  if(!box) return;
+  box.style.display = 'block';
+  box.style.background = (kind === 'ok') ? '#dcfce7' : (kind === 'warn' ? '#fef9c3' : '#fee2e2');
+  box.style.color = (kind === 'ok') ? '#14532d' : (kind === 'warn' ? '#854d0e' : '#7f1d1d');
+  box.textContent = msg;
+  clearTimeout(showUploadStatus._t);
+  showUploadStatus._t = setTimeout(()=>{ box.style.display = 'none'; }, 6000);
 }
+
+
+
+
+async function uploadToGitHub(){
+  try{
+    // Collect required inputs
+    const owner = (document.getElementById('gitOwner')?.value || '').trim();
+    const repo  = (document.getElementById('gitRepo')?.value  || '').trim();
+    const token = (document.getElementById('gitToken')?.value || '').trim();
+    const branch = (document.getElementById('gitBranch')?.value || 'main').trim();
+    const path = (document.getElementById('gitPath')?.value || 'news.json').trim();
+
+    if(!owner || !repo || !token){
+      showUploadStatus('err', '請先填寫 Owner / Repository / PAT (Token)。');
+      alert('請填寫 Owner / Repository / Token');
+      return;
+    }
+
+    // Items to upload (fallback to window.items or text area)
+    let data = Array.isArray(window.items) ? window.items : null;
+    if(!data){
+      // 若沒有 items，試試讀頁面中的暫存輸入框
+      const txt = document.getElementById('jsonText')?.value;
+      if(txt){
+        try{ data = JSON.parse(txt); } catch(_){}
+      }
+    }
+    if(!data){
+      showUploadStatus('err', '找不到要上傳的資料（items 為空）。請先載入或新增資料。');
+      alert('找不到要上傳的資料（items 為空）。');
+      return;
+    }
+
+    // Prepare base64 content
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+
+    // Step 1: fetch existing file to get sha (if any)
+    let sha = null;
+    let getRes = await fetch(apiBase + `?ref=${encodeURIComponent(branch)}`, {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if(getRes.ok){
+      const info = await getRes.json();
+      if(info && info.sha) sha = info.sha;
+    }else if(getRes.status !== 404){
+      const t = await getRes.text();
+      showUploadStatus('err', `讀取現有檔案失敗 (${getRes.status}): ${t}`);
+      alert(`讀取現有檔案失敗：${getRes.status}`);
+      return;
+    }
+
+    // Step 2: PUT to create/update
+    const payload = {
+      message: `chore: update ${path} via admin UI (${new Date().toISOString()})`,
+      content,
+      branch
+    };
+    if(sha) payload.sha = sha;
+
+    const putRes = await fetch(apiBase, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const dataRes = await putRes.json().catch(()=>({}));
+    if(putRes.ok && dataRes && dataRes.commit && dataRes.content){
+      const shaShort = (dataRes.commit.sha || '').slice(0, 7);
+      showUploadStatus('ok', `✅ 上傳成功，commit ${shaShort}`);
+      alert(`✅ 上傳成功！Commit: ${dataRes.commit.sha}`);
+    }else{
+      const msg = (dataRes && dataRes.message) ? dataRes.message : `HTTP ${putRes.status}`;
+      showUploadStatus('err', `❌ 上傳失敗：${msg}`);
+      alert(`❌ 上傳失敗：${msg}`);
+    }
+  }catch(err){
+    showUploadStatus('err', '❌ 上傳例外：' + (err && err.message ? err.message : String(err)));
+    alert('❌ 上傳例外：' + (err && err.message ? err.message : String(err)));
+  }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('btnUpload');
+  if(btn) btn.addEventListener('click', uploadToGitHub);
+});
 </script>
-</body>
-</html>
+
+<div id="uploadStatus" style="position:fixed;right:16px;bottom:16px;max-width:420px;padding:12px 14px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:14px;line-height:1.4;display:none;background:#f8fafc;color:#0f172a;z-index:9999"></div>
+
+<!-- injected: GitHub upload panel -->
+<div style="position:fixed;left:16px;bottom:16px;z-index:9998;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);padding:12px 14px;max-width:92vw">
+  <div style="font-weight:600;margin-bottom:8px">GitHub 上傳</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <input id="gitOwner" placeholder="Owner（帳號或 Org）" style="border:1px solid #cbd5e1;padding:6px 8px;border-radius:8px;min-width:180px">
+    <input id="gitRepo"  placeholder="Repository 名稱" style="border:1px solid #cbd5e1;padding:6px 8px;border-radius:8px;min-width:160px">
+    <input id="gitBranch" value="main" placeholder="Branch（預設 main）" style="border:1px solid #cbd5e1;padding:6px 8px;border-radius:8px;min-width:120px">
+    <input id="gitPath" value="news.json" placeholder="檔案路徑（預設 news.json）" style="border:1px solid #cbd5e1;padding:6px 8px;border-radius:8px;min-width:160px">
+    <input id="gitToken" placeholder="個人存取權杖 PAT" type="password" style="border:1px solid #cbd5e1;padding:6px 8px;border-radius:8px;min-width:260px">
+    <button id="btnUpload" style="background:#0ea5e9;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:600;cursor:pointer">上傳 news.json 到 GitHub</button>
+  </div>
+  <div style="font-size:12px;color:#64748b;margin-top:6px">⚠️ PAT 只給 <code>contents</code> 權限即可。請勿把 PAT 寫入專案檔案中。</div>
+</div>
+
+</body></html>
