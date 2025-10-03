@@ -489,6 +489,72 @@
       if(f) importLocal(f);
       e.target.value='';
     });
-  </script>
+  
+// --- injected: preview renderer ---
+if (typeof currentPreviewIndex === 'undefined') { var currentPreviewIndex = null; }
+
+function renderPreview(idx){
+  const pane = document.getElementById('preview');
+  const tpl = document.getElementById('previewTpl');
+  if(!pane || !tpl){ return; }
+  const it = (Array.isArray(items) ? items[idx] : null);
+  if(!it){
+    pane.innerHTML = '<p class="text-slate-500 text-sm">尚未選擇預覽項目。</p>';
+    return;
+  }
+
+  const node = tpl.content.cloneNode(true);
+
+  // 填入資料
+  const get = sel => node.querySelector(sel);
+  const badgeEl = node.querySelector('.badge');
+  if(badgeEl) badgeEl.textContent = it.badge || '告';
+
+  const typeEl = get('[data-field="type"]');
+  if(typeEl) typeEl.textContent = it.type || 'announce';
+
+  const titleEl = get('[data-field="title"]');
+  if(titleEl) titleEl.textContent = it.title || '';
+
+  // 期間優先使用 startsAt ~ endsAt，否則使用 period
+  const periodEl = get('[data-field="period"]');
+  if(periodEl){
+    let periodStr = '';
+    if(it.startsAt || it.endsAt){
+      const s = it.startsAt || '';
+      const e = it.endsAt || '';
+      periodStr = (s && e) ? `${s} ~ ${e}` : (s || e);
+    } else if (it.period){
+      periodStr = it.period;
+    }
+    periodEl.textContent = periodStr;
+  }
+
+  const summaryEl = get('[data-field="summary"]');
+  if(summaryEl) summaryEl.textContent = it.summary || '';
+
+  const bulletsEl = get('[data-field="bullets"]');
+  if(bulletsEl){
+    bulletsEl.innerHTML = '';
+    const bullets = Array.isArray(it.bullets) ? it.bullets : [];
+    bullets.forEach(txt=>{
+      const li = document.createElement('li');
+      li.textContent = txt;
+      bulletsEl.appendChild(li);
+    });
+  }
+
+  const ctaEl = get('[data-field="cta"]');
+  if(ctaEl){
+    const text = (it.cta && it.cta.text) ? it.cta.text : (it.summaryButtonText || '查看內容');
+    const href = (it.cta && it.cta.href) ? it.cta.href : '#';
+    ctaEl.textContent = text;
+    ctaEl.setAttribute('href', href || '#');
+  }
+
+  pane.innerHTML = '';
+  pane.appendChild(node);
+}
+</script>
 </body>
 </html>
