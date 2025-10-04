@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <!-- 新增 favicon -->
   <link rel="icon" href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png" type="image/png"/>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -15,8 +14,9 @@
 <body class="bg-slate-50 text-slate-900">
   <div class="max-w-5xl mx-auto p-4 md:p-6">
     <h1 class="text-2xl md:text-3xl font-extrabold">最新消息｜公告管理</h1>
-    <p class="text-sm text-slate-600 mt-1">純前端管理。編輯完成後按「下載」產出新的 <code class="mono">news.json</code> 進行部署。</p>
+    <p class="text-sm text-slate-600 mt-1">純前端管理。編輯完成後按「下載」或「上傳到 GitHub」產出新的 <code class="mono">news.json</code>。</p>
 
+    <!-- 功能按鈕列 -->
     <div class="mt-4 flex flex-wrap gap-2">
       <button id="btnLoad" class="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">載入伺服器上的 news.json</button>
       <label class="px-3 py-2 rounded bg-slate-200 text-slate-800 text-sm hover:bg-slate-300 cursor-pointer">
@@ -25,6 +25,41 @@
       </label>
       <button id="btnAdd" class="px-3 py-2 rounded bg-emerald-600 text-white text-sm hover:bg-emerald-700">新增一筆</button>
       <button id="btnDownload" class="px-3 py-2 rounded bg-amber-600 text-white text-sm hover:bg-amber-700">下載更新後的 news.json</button>
+    </div>
+
+    <!-- 上傳到 GitHub -->
+    <div class="mt-4 border rounded-xl p-3 bg-white">
+      <h3 class="font-semibold mb-2">上傳到 GitHub</h3>
+      <div class="grid gap-2 md:grid-cols-2">
+        <label class="text-sm">
+          Owner / Org
+          <input id="gh-owner" class="w-full border rounded px-2 py-1" placeholder="你的 GitHub 帳號或組織"/>
+        </label>
+        <label class="text-sm">
+          Repo
+          <input id="gh-repo" class="w-full border rounded px-2 py-1" placeholder="你的 repo 名稱"/>
+        </label>
+        <label class="text-sm">
+          Branch
+          <input id="gh-branch" class="w-full border rounded px-2 py-1" placeholder="main" value="main"/>
+        </label>
+        <label class="text-sm">
+          Path
+          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="news.json" value="news.json"/>
+        </label>
+        <label class="text-sm md:col-span-2">
+          GitHub Token (PAT)
+          <input id="gh-token" type="password" class="w-full border rounded px-2 py-1" placeholder="ghp_..."/>
+        </label>
+        <label class="text-sm md:col-span-2 flex items-center gap-2">
+          <input id="gh-remember" type="checkbox" class="border rounded"> 記住以上設定（不含 Token）
+        </label>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <button id="btn-upload" class="px-3 py-2 rounded bg-black text-white text-sm">上傳到 GitHub</button>
+        <span id="gh-status" class="text-sm text-slate-600"></span>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">提示：不要把 Token 寫死在程式碼。建議只在使用時貼上，並定期重新產生。</p>
     </div>
 
     <details class="mt-4 bg-white rounded-xl border p-3" open>
@@ -63,15 +98,15 @@
           <input data-field="badge" class="w-full border rounded px-2 py-1 text-sm" placeholder="告、優…">
         </div>
         <div class="space-y-2">
-          <label class="block text-xs text-slate-600">顯示期間 period（純文字）</label>
+          <label class="block text-xs text-slate-600">顯示期間 period（第二行顯示）</label>
           <input data-field="period" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025/09/10 – 2025/09/30">
         </div>
         <div class="space-y-2">
-          <label class="block text-xs text-slate-600">startsAt（YYYY-MM-DD）</label>
+          <label class="block text-xs text-slate-600">開始時間（YYYY-MM-DD）</label>
           <input data-field="startsAt" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025-09-10">
         </div>
         <div class="space-y-2">
-          <label class="block text-xs text-slate-600">endsAt（YYYY-MM-DD）</label>
+          <label class="block text-xs text-slate-600">結束時間（YYYY-MM-DD）</label>
           <input data-field="endsAt" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025-09-30">
         </div>
         <div class="space-y-2 md:col-span-2">
@@ -79,20 +114,52 @@
           <input data-field="summaryButtonText" class="w-full border rounded px-2 py-1 text-sm" placeholder="例如：查看優惠、詳細內容、更多資訊">
         </div>
         <div class="md:col-span-2 space-y-2">
-          <label class="block text-xs text-slate-600">摘要 summary</label>
+          <label class="block text-xs text-slate-600">摘要 summary （第三行顯示）</label>
           <textarea data-field="summary" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="簡短說明"></textarea>
         </div>
         <div class="md:col-span-2 space-y-2">
-          <label class="block text-xs text-slate-600">條列 bullets（每行一項）</label>
+          <label class="block text-xs text-slate-600">展開內容（每行一項）</label>
           <textarea data-field="bullets" class="w-full border rounded px-2 py-1 text-sm mono" rows="3" placeholder="到府專業清洗\n使用環保清潔劑"></textarea>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">CTA 文字</label>
-          <input data-field="ctaText" class="w-full border rounded px-2 py-1 text-sm" placeholder="LINE 聯繫">
-        </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">CTA 連結</label>
-          <input data-field="ctaHref" class="w-full border rounded px-2 py-1 text-sm" placeholder="https://line.me/...">
+
+        <!-- 樣式設定：三組獨立 -->
+        <div class="md:col-span-2 grid md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded">
+          <!-- periodStyle -->
+          <div class="space-y-2 border rounded p-2 bg-white">
+            <div class="text-xs text-slate-600 font-semibold">顯示期間 period 樣式</div>
+            <label class="text-xs flex flex-col">字體大小 (px)
+              <input data-scope="periodStyle" data-prop="fontSize" type="number" min="8" max="72" class="border rounded px-2 py-1 text-sm" placeholder="例如 14">
+            </label>
+            <label class="text-xs flex flex-col">字體顏色
+              <input data-scope="periodStyle" data-prop="fontColor" type="color" class="border rounded px-2 py-1 text-sm">
+            </label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="periodStyle" data-prop="bold" type="checkbox"> 粗體</label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="periodStyle" data-prop="preserveLineBreaks" type="checkbox"> 保留換行</label>
+          </div>
+          <!-- summaryStyle -->
+          <div class="space-y-2 border rounded p-2 bg-white">
+            <div class="text-xs text-slate-600 font-semibold">摘要 summary 樣式</div>
+            <label class="text-xs flex flex-col">字體大小 (px)
+              <input data-scope="summaryStyle" data-prop="fontSize" type="number" min="8" max="72" class="border rounded px-2 py-1 text-sm" placeholder="例如 14">
+            </label>
+            <label class="text-xs flex flex-col">字體顏色
+              <input data-scope="summaryStyle" data-prop="fontColor" type="color" class="border rounded px-2 py-1 text-sm">
+            </label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="summaryStyle" data-prop="bold" type="checkbox"> 粗體</label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="summaryStyle" data-prop="preserveLineBreaks" type="checkbox"> 保留換行</label>
+          </div>
+          <!-- bulletsStyle -->
+          <div class="space-y-2 border rounded p-2 bg-white">
+            <div class="text-xs text-slate-600 font-semibold">條列 bullets 樣式</div>
+            <label class="text-xs flex flex-col">字體大小 (px)
+              <input data-scope="bulletsStyle" data-prop="fontSize" type="number" min="8" max="72" class="border rounded px-2 py-1 text-sm" placeholder="例如 14">
+            </label>
+            <label class="text-xs flex flex-col">字體顏色
+              <input data-scope="bulletsStyle" data-prop="fontColor" type="color" class="border rounded px-2 py-1 text-sm">
+            </label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="bulletsStyle" data-prop="bold" type="checkbox"> 粗體</label>
+            <label class="text-xs flex items-center gap-2"><input data-scope="bulletsStyle" data-prop="preserveLineBreaks" type="checkbox"> 保留換行</label>
+          </div>
         </div>
       </div>
     </div>
@@ -104,53 +171,106 @@
     const tpl = $('#rowTpl');
     let items = [];
 
+    function setIf(el, prop, val, fallback){
+      if(el) el[prop] = (val===undefined||val===null) ? (fallback!==undefined?fallback:el[prop]) : val;
+    }
+
+    function ensureStyleObj(obj){
+      if(!obj.periodStyle)  obj.periodStyle  = { fontSize:'', fontColor:'#000000', bold:false, preserveLineBreaks:false };
+      if(!obj.summaryStyle) obj.summaryStyle = { fontSize:'', fontColor:'#000000', bold:false, preserveLineBreaks:false };
+      if(!obj.bulletsStyle) obj.bulletsStyle = { fontSize:'', fontColor:'#000000', bold:false, preserveLineBreaks:false };
+      return obj;
+    }
+
     function render(){
       listEl.innerHTML = '';
       if(!items.length){
         listEl.innerHTML = '<p class="text-sm text-slate-600">目前沒有資料，請點「新增一筆」或「載入」。</p>';
         return;
       }
-      items.forEach((it, idx) => {
+      items.forEach((raw, idx) => {
+        const it = ensureStyleObj(raw);
         const node = tpl.content.cloneNode(true);
-        node.querySelector('[data-field="title"]').value = it.title || '';
-        node.querySelector('[data-field="id"]').value = it.id || '';
-        node.querySelector('[data-field="type"]').value = it.type || 'announce';
-        node.querySelector('[data-field="badge"]').value = it.badge || '';
-        node.querySelector('[data-field="period"]').value = it.period || '';
-        node.querySelector('[data-field="startsAt"]').value = it.startsAt || '';
-        node.querySelector('[data-field="endsAt"]').value = it.endsAt || '';
-        node.querySelector('[data-field="summaryButtonText"]').value = it.summaryButtonText || '';
-        node.querySelector('[data-field="summary"]').value = it.summary || '';
-        node.querySelector('[data-field="bullets"]').value = (it.bullets||[]).join('\\n');
-        node.querySelector('[data-field="ctaText"]').value = it.cta?.text || '';
-        node.querySelector('[data-field="ctaHref"]').value = it.cta?.href || '';
-        node.querySelector('[data-field="pinned"]').checked = !!it.pinned;
 
+        setIf(node.querySelector('[data-field="title"]'), 'value', it.title || '');
+        setIf(node.querySelector('[data-field="id"]'), 'value', it.id || '');
+        setIf(node.querySelector('[data-field="type"]'), 'value', it.type || 'announce');
+        setIf(node.querySelector('[data-field="badge"]'), 'value', it.badge || '');
+        setIf(node.querySelector('[data-field="period"]'), 'value', it.period || '');
+        setIf(node.querySelector('[data-field="startsAt"]'), 'value', it.startsAt || '');
+        setIf(node.querySelector('[data-field="endsAt"]'), 'value', it.endsAt || '');
+        setIf(node.querySelector('[data-field="summaryButtonText"]'), 'value', it.summaryButtonText || '');
+        setIf(node.querySelector('[data-field="summary"]'), 'value', it.summary || '');
+        setIf(node.querySelector('[data-field="bullets"]'), 'value', (it.bullets||[]).join('\\n'));
+        setIf(node.querySelector('[data-field="ctaText"]'), 'value', it.cta?.text || '');
+        setIf(node.querySelector('[data-field="ctaHref"]'), 'value', it.cta?.href || '');
+        setIf(node.querySelector('[data-field="pinned"]'), 'checked', !!it.pinned);
+
+        // Fill per-scope style inputs
+        const fillScope = (scopeName, styleObj)=>{
+          const root = node;
+          setIf(root.querySelector(`[data-scope="${scopeName}"][data-prop="fontSize"]`), 'value', styleObj.fontSize || '');
+          setIf(root.querySelector(`[data-scope="${scopeName}"][data-prop="fontColor"]`), 'value', styleObj.fontColor || '#000000');
+          setIf(root.querySelector(`[data-scope="${scopeName}"][data-prop="bold"]`), 'checked', !!styleObj.bold);
+          setIf(root.querySelector(`[data-scope="${scopeName}"][data-prop="preserveLineBreaks"]`), 'checked', !!styleObj.preserveLineBreaks);
+        };
+        fillScope('periodStyle', it.periodStyle);
+        fillScope('summaryStyle', it.summaryStyle);
+        fillScope('bulletsStyle', it.bulletsStyle);
+
+        // Generic handler for base fields
         node.querySelectorAll('[data-field]').forEach(input=>{
-          input.addEventListener('input', (e)=>{
+          const type = input.getAttribute('type');
+          const ev = type === 'checkbox' ? 'change' : 'input';
+          input.addEventListener(ev, (e)=>{
             const f = e.target.getAttribute('data-field');
-            const v = e.target.value;
             const t = items[idx];
-            if(f==='title') t.title = v;
-            if(f==='id') t.id = v;
-            if(f==='type') t.type = v;
-            if(f==='badge') t.badge = v;
-            if(f==='period') t.period = v;
-            if(f==='startsAt') t.startsAt = v;
-            if(f==='endsAt') t.endsAt = v;
-            if(f==='summaryButtonText') t.summaryButtonText = v;
-            if(f==='summary') t.summary = v;
-            if(f==='bullets') t.bullets = v.split('\\n').filter(x=>x.trim().length);
-            if(f==='ctaText'){ t.cta = t.cta || {}; t.cta.text = v; }
-            if(f==='ctaHref'){ t.cta = t.cta || {}; t.cta.href = v; }
+            const val = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
+
+            if(f==='title') t.title = val;
+            else if(f==='id') t.id = val;
+            else if(f==='type') t.type = val;
+            else if(f==='badge') t.badge = val;
+            else if(f==='period') t.period = val;
+            else if(f==='startsAt') t.startsAt = val;
+            else if(f==='endsAt') t.endsAt = val;
+            else if(f==='summaryButtonText') t.summaryButtonText = val;
+            else if(f==='summary') t.summary = val;
+            else if(f==='bullets') t.bullets = String(val).split('\\n').filter(x=>x.trim().length);
+            else if(f==='ctaText'){ t.cta = t.cta || {}; t.cta.text = val; }
+            else if(f==='ctaHref'){ t.cta = t.cta || {}; t.cta.href = val; }
           });
         });
-        node.querySelector('[data-field="pinned"]').addEventListener('change',(e)=>{
-          items[idx].pinned = e.target.checked;
+
+        // Handlers for per-scope style inputs
+        node.querySelectorAll('[data-scope][data-prop]').forEach(input=>{
+          const type = input.getAttribute('type');
+          const ev = type === 'checkbox' ? 'change' : 'input';
+          input.addEventListener(ev, (e)=>{
+            const scope = e.target.getAttribute('data-scope');
+            const prop = e.target.getAttribute('data-prop');
+            const t = ensureStyleObj(items[idx]);
+            const val = (e.target.type === 'checkbox') ? e.target.checked : e.target.value;
+            const target = t[scope];
+            if(prop === 'fontSize') target.fontSize = parseInt(val)||'';
+            else if(prop === 'fontColor') target.fontColor = val;
+            else if(prop === 'bold') target.bold = !!val;
+            else if(prop === 'preserveLineBreaks') target.preserveLineBreaks = !!val;
+          });
         });
-        node.querySelector('[data-action="delete"]').addEventListener('click', ()=>{
-          if(confirm('確定刪除這一筆嗎？')){ items.splice(idx, 1); render(); }
-        });
+
+        const pinnedEl = node.querySelector('[data-field="pinned"]');
+        if(pinnedEl){
+          pinnedEl.addEventListener('change',(e)=>{
+            items[idx].pinned = e.target.checked;
+          });
+        }
+        const delEl = node.querySelector('[data-action="delete"]');
+        if(delEl){
+          delEl.addEventListener('click', ()=>{
+            if(confirm('確定刪除這一筆嗎？')){ items.splice(idx, 1); render(); }
+          });
+        }
 
         listEl.appendChild(node);
       });
@@ -160,15 +280,19 @@
       try{
         const res = await fetch('/news.json?v=' + Date.now(), { cache:'no-store' });
         if(!res.ok) throw new Error('載入失敗');
-        items = await res.json();
+        const data = await res.json();
+        if(Array.isArray(data)) items = data.map(ensureStyleObj);
+        else if(Array.isArray(data.items)) items = data.items.map(ensureStyleObj);
+        else throw new Error('格式應為陣列');
         render();
       }catch(e){
-        alert('讀取 /news.json 失敗。請確認檔案位置或改用「從本機匯入」。');
+        alert('讀取 /news.json 失敗：' + e.message + '。可改用「從本機匯入」。');
       }
     }
 
     function downloadJson(){
-      const blob = new Blob([JSON.stringify(items, null, 2)], {type:'application/json'});
+      const payload = JSON.stringify(items, null, 2);
+      const blob = new Blob([payload], {type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'news.json';
@@ -177,7 +301,7 @@
     }
 
     function addItem(){
-      items.unshift({
+      items.unshift(ensureStyleObj({
         id: 'ann-' + Date.now(),
         type: 'announce',
         badge: '告',
@@ -190,7 +314,7 @@
         pinned: false,
         startsAt: '',
         endsAt: ''
-      });
+      }));
       render();
     }
 
@@ -199,8 +323,9 @@
       reader.onload = e => {
         try{
           const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)) throw new Error('格式應為陣列');
-          items = data;
+          if(Array.isArray(data)) items = data.map(ensureStyleObj);
+          else if(Array.isArray(data.items)) items = data.items.map(ensureStyleObj);
+          else throw new Error('格式應為陣列');
           render();
         }catch(err){
           alert('匯入失敗：' + err.message);
@@ -209,14 +334,122 @@
       reader.readAsText(file, 'utf-8');
     }
 
-    document.getElementById('btnLoad').addEventListener('click', loadFromServer);
-    document.getElementById('btnDownload').addEventListener('click', downloadJson);
-    document.getElementById('btnAdd').addEventListener('click', addItem);
-    document.getElementById('fileInput').addEventListener('change', (e)=>{
+    // 綁定事件（加防呆）
+    const elLoad = document.getElementById('btnLoad'); if(elLoad) elLoad.addEventListener('click', loadFromServer);
+    const elDown = document.getElementById('btnDownload'); if(elDown) elDown.addEventListener('click', downloadJson);
+    const elAdd = document.getElementById('btnAdd'); if(elAdd) elAdd.addEventListener('click', addItem);
+    const elFile = document.getElementById('fileInput'); if(elFile) elFile.addEventListener('change', (e)=>{
       const f = e.target.files?.[0];
       if(f) importLocal(f);
       e.target.value='';
     });
+
+    // ===== GitHub 上傳功能 =====
+    const PREF_KEY = 'news-admin-gh-prefs';
+    function toBase64Utf8(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      bytes.forEach(b => bin += String.fromCharCode(b));
+      return btoa(bin);
+    }
+    function loadPrefs(){
+      try {
+        const p = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+        if(!p) return;
+        const owner = document.getElementById('gh-owner'); if(owner) owner.value = p.owner || owner.value;
+        const repo = document.getElementById('gh-repo'); if(repo) repo.value = p.repo || repo.value;
+        const branch = document.getElementById('gh-branch'); if(branch) branch.value = p.branch || branch.value;
+        const path = document.getElementById('gh-path'); if(path) path.value = p.path || path.value;
+        const chk = document.getElementById('gh-remember'); if(chk) chk.checked = !!p.remember;
+      } catch {}
+    }
+    function maybeSavePrefs(){
+      const chk = document.getElementById('gh-remember');
+      if(!chk || !chk.checked) return;
+      const prefs = {
+        remember: true,
+        owner: (document.getElementById('gh-owner')?.value || '').trim(),
+        repo: (document.getElementById('gh-repo')?.value || '').trim(),
+        branch: (document.getElementById('gh-branch')?.value || '').trim(),
+        path: (document.getElementById('gh-path')?.value || '').trim()
+      };
+      try{ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }catch{}
+    }
+    function clearPrefs(){ try{ localStorage.removeItem(PREF_KEY);}catch{} }
+
+    async function getFileSha({owner, repo, path, branch, token}) {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('讀取檔案失敗');
+      const json = await res.json();
+      return json.sha;
+    }
+    async function putFile({owner, repo, path, branch, token, content, sha}) {
+      const body = {
+        message: `chore(news): update ${path} at ${new Date().toISOString()}`,
+        content: toBase64Utf8(content),
+        branch
+      };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`上傳失敗: ${text}`);
+      }
+      return res.json();
+    }
+    async function uploadNewsJson() {
+      const owner  = (document.getElementById('gh-owner')?.value || '').trim();
+      const repo   = (document.getElementById('gh-repo')?.value || '').trim();
+      const branch = (document.getElementById('gh-branch')?.value || 'main').trim();
+      const path   = (document.getElementById('gh-path')?.value || 'news.json').trim();
+      const token  = (document.getElementById('gh-token')?.value || '').trim();
+      const statusEl = document.getElementById('gh-status');
+
+      if (!owner || !repo || !token) {
+        alert('請填寫 Owner / Repo / Token');
+        return;
+      }
+
+      maybeSavePrefs();
+      if(statusEl) statusEl.textContent = '讀取遠端檔案狀態…';
+      let sha = null;
+      try {
+        sha = await getFileSha({owner, repo, path, branch, token});
+      } catch (e) {
+        alert('讀取遠端檔案失敗：' + e.message);
+        return;
+      }
+
+      if(statusEl) statusEl.textContent = '上傳中…';
+      try {
+        const result = await putFile({ owner, repo, path, branch, token, content: JSON.stringify(items, null, 2), sha });
+        if(statusEl) statusEl.textContent = '✅ 已上傳 (commit ' + (result.commit?.sha?.slice(0,7) || '') + ')';
+      } catch (e) {
+        alert('上傳失敗：' + e.message + '\n請確認 Token 權限與 owner/repo/branch/path 是否正確。');
+        if(statusEl) statusEl.textContent = '❌ 上傳失敗';
+      }
+    }
+
+    const upBtn = document.getElementById('btn-upload'); if(upBtn) upBtn.addEventListener('click', uploadNewsJson);
+    ['gh-owner','gh-repo','gh-branch','gh-path'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.addEventListener('input', maybeSavePrefs);
+    });
+    const rememberEl = document.getElementById('gh-remember');
+    if(rememberEl){
+      rememberEl.addEventListener('change', (e)=>{
+        if(e.target.checked){ maybeSavePrefs(); } else { clearPrefs(); }
+      });
+    }
+    loadPrefs();
+    // ===== GitHub 上傳功能結束 =====
   </script>
 </body>
 </html>
