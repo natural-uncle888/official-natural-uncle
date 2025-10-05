@@ -4,7 +4,7 @@
     "type": "announce",
     "badge": "告",
     "title": "中秋節連假服務時間",
-    "period": "中秋節連假：2025/10/01 – 2025/10/06",
+    "period": "中秋節連假：2025/10/03 – 2025/10/06",
     "summaryButtonText": "休息時間說明",
     "summary": "連假期間預約平台正常服務",
     "bullets": [
@@ -18,7 +18,7 @@
     "startsAt": "2025-09-10",
     "endsAt": "2025-10-07",
     "periodStyle": {
-      "fontSize": "",
+      "fontSize": 16,
       "fontColor": "#ff0000",
       "bold": true,
       "preserveLineBreaks": false
