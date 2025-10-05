@@ -4,9 +4,9 @@
     "type": "announce",
     "badge": "告",
     "title": "中秋節連假服務時間",
-    "period": "中秋節連假：2025/10/03 – 2025/10/06",
+    "period": "<span style=\"color:red\">中秋節連假：2025/10/03 – 2025/10/06</span>",
     "summaryButtonText": "休息時間說明",
-    "summary": "連假期間預約平台正常服務",
+    "summary": "<b>連假期間預約平台正常服務</b>",
     "bullets": [
       "10/03、10/04 暫停到府清洗服務，敬請見諒。"
     ],
@@ -34,6 +34,7 @@
       "fontColor": "#ff0000",
       "bold": true,
       "preserveLineBreaks": false
-    }
+    },
+    "summaryFormat": "html"
   }
 ]
