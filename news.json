@@ -16,6 +16,24 @@
     },
     "pinned": false,
     "startsAt": "2025-09-10",
-    "endsAt": "2025-10-07"
+    "endsAt": "2025-10-07",
+    "periodStyle": {
+      "fontSize": "",
+      "fontColor": "#ff0000",
+      "bold": true,
+      "preserveLineBreaks": false
+    },
+    "summaryStyle": {
+      "fontSize": "",
+      "fontColor": "#000000",
+      "bold": false,
+      "preserveLineBreaks": false
+    },
+    "bulletsStyle": {
+      "fontSize": "",
+      "fontColor": "#ff0000",
+      "bold": true,
+      "preserveLineBreaks": false
+    }
   }
 ]
