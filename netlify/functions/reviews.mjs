@@ -1,136 +1,147 @@
 // netlify/functions/reviews.mjs
-import { jsonResp, parseBody, hmacVerify, blobGetJSON, blobSetJSON, requireAdmin, generateCoupon, sendCouponByEmail, cloudinaryUpload } from './_shared.mjs';
+import { getStore, initCloudinary, assertEnv, env, dataURLtoBuffer, rid } from './_shared.mjs';
+import * as jose from 'jose';
 
-/**
- * 資料結構（Blobs）
- * - reviews/index.json: { list: [ {id, status, createdAt, who, name, area, service, rating, comment, images, ownerReply, tokenPayload, couponCode, email } ] }
- * - coupons/index.json: { used: { CODE: { used_at } }, issued: { CODE: {...} } }
- */
-
-const REVIEWS_KEY = 'reviews/index.json';
-const COUPONS_KEY = 'coupons/index.json';
-
-export default async (req) => {
+export const handler = async (event) => {
   try {
-    if (req.method === 'GET') return getReviews(req);
-    if (req.method === 'POST') return createReview(req);
-    if (req.method === 'PUT') return adminAction(req);
-    return jsonResp(405, { error: 'Method not allowed' });
+    assertEnv();
+    const store = getStore();
+
+    if (event.httpMethod === 'OPTIONS') {
+      return ok({ ok: true }); // 簡易 CORS
+    }
+
+    if (event.httpMethod === 'GET') {
+      // /reviews?status=approved&page=1&page_size=6
+      const url = new URL(event.rawUrl);
+      const status = url.searchParams.get('status') || 'approved';
+      const page = parseInt(url.searchParams.get('page') || '1', 10);
+      const size = parseInt(url.searchParams.get('page_size') || '6', 10);
+      // 從 blobs 讀 index
+      const idxKey = `idx_${status}.json`;
+      const idx = await readJSON(store, idxKey) || [];
+      const start = (page - 1) * size;
+      const ids = idx.slice(start, start + size);
+      const items = [];
+      for (const id of ids) {
+        const it = await readJSON(store, `review_${id}.json`);
+        if (it) items.push(it);
+      }
+      return ok({ items, hasMore: start + size < idx.length });
+    }
+
+    if (event.httpMethod === 'POST') {
+      // 送出投稿：驗證 token、限制圖片、上傳 Cloudinary、存 pending
+      const body = JSON.parse(event.body || '{}');
+
+      // token 驗證（與 /.netlify/functions/token 使用同一把 TOKEN_SECRET）
+      const { token, name, area, service, rating, comment, images } = body;
+      if (!token) return bad('missing_token');
+      try {
+        await jose.jwtVerify(token, new TextEncoder().encode(env.TOKEN_SECRET));
+      } catch (e) {
+        return bad('invalid_or_expired_token');
+      }
+
+      // 檢查欄位
+      if (!name || !service || !area) return bad('missing_fields');
+      const score = Number(rating || 0);
+      if (!(score >= 1 && score <= 5)) return bad('invalid_rating');
+
+      // 圖片必填、最多 2 張、10MB 限制、4:3 裁切
+      const imgs = Array.isArray(images) ? images.slice(0, 2) : [];
+      if (imgs.length < 1) return bad('need_at_least_one_image');
+
+      // 上傳
+      const cld = initCloudinary();
+      const uploadedUrls = [];
+      for (const d of imgs) {
+        const { mime, buf } = dataURLtoBuffer(d);
+        const sizeMB = buf.byteLength / (1024 * 1024);
+        if (sizeMB > 10) return bad('image_too_large');
+
+        // 使用 upload_stream 較穩
+        const url = await new Promise((resolve, reject) => {
+          const stream = cld.uploader.upload_stream(
+            {
+              folder: 'ugc',
+              resource_type: 'image',
+              overwrite: false,
+              transformation: [
+                { aspect_ratio: "4:3", crop: "fill", gravity: "auto" }
+              ]
+            },
+            (err, res) => {
+              if (err) reject(err);
+              else resolve(res.secure_url);
+            }
+          );
+          stream.end(buf);
+        });
+        uploadedUrls.push(url);
+      }
+
+      const now = new Date().toISOString();
+      const id = rid('r');
+      const review = {
+        id,
+        name,
+        area,
+        service,
+        rating: score,
+        comment: (comment || '').toString().slice(0, 2000),
+        images: uploadedUrls,
+        ownerReply: "",
+        status: "pending",
+        createdAt: now
+      };
+
+      await writeJSON(store, `review_${id}.json`, review);
+      await appendIndex(store, 'pending', id);
+
+      return ok({ ok: true, id });
+    }
+
+    return notFound();
   } catch (err) {
-    return jsonResp(err.status || 500, { error: err.message || 'Server error' });
+    console.error('reviews error', err);
+    return { statusCode: 500, body: JSON.stringify({ error: 'server_error' }) };
   }
+};
+
+function ok(data) {
+  return resp(200, data);
 }
-
-async function getReviews(req) {
-  const url = new URL(req.url);
-  const status = url.searchParams.get('status') || 'approved';
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(url.searchParams.get('page_size') || '9', 10);
-
-  const db = await blobGetJSON(REVIEWS_KEY, { list: [] });
-  const filtered = db.list.filter(it => it.status === status).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const slice = filtered.slice(start, end);
-
-  return jsonResp(200, {
-    items: slice.map(({ tokenPayload, ...rest }) => rest),
-    page, pageSize, total: filtered.length,
-    hasMore: end < filtered.length
-  });
+function bad(msg) {
+  return resp(400, { error: msg });
 }
-
-async function createReview(req) {
-  const body = await parseBody(req);
-  const { token, name, area, service, rating, comment, images = [], email } = body || {};
-
-  const payload = hmacVerify(token);
-  if (!payload) return jsonResp(401, { error: '無效或過期的專屬連結' });
-
-  if (!Array.isArray(images) || images.length < 1 || images.length > 2) {
-    return jsonResp(400, { error: '請上傳 1–2 張與本次服務相關之照片' });
-  }
-
-  if (!name || !service || !area) return jsonResp(400, { error: 'name / service / area 為必填' });
-  const ratingInt = parseInt(rating, 10);
-  if (Number.isNaN(ratingInt) || ratingInt < 1 || ratingInt > 5) {
-    return jsonResp(400, { error: 'rating 需為 1–5' });
-  }
-
-  // 上傳圖片到 Cloudinary（支援 base64 data URL 或 http(s) URL）
-  const uploaded = [];
-  for (let i=0;i<images.length;i++) {
-    const file = images[i];
-    try {
-      const res = await cloudinaryUpload({ file, folder: 'natural-uncle/ugc' });
-      uploaded.push(res.secure_url);
-    } catch (e) {
-      return jsonResp(500, { error: '圖片上傳失敗，請稍後再試' });
-    }
-  }
-
-  const db = await blobGetJSON(REVIEWS_KEY, { list: [] });
-  const id = 'r' + Math.random().toString(36).slice(2, 8);
-  const nowIso = new Date().toISOString();
-  const item = {
-    id,
-    status: 'pending',
-    createdAt: nowIso,
-    who: 'customer',
-    name,
-    area,
-    service,
-    rating: ratingInt,
-    comment: String(comment || ''),
-    images: uploaded,
-    ownerReply: '',
-    tokenPayload: payload,
-    email: email || ''
+function notFound() {
+  return resp(404, { error: 'not_found' });
+}
+function resp(code, data) {
+  return {
+    statusCode: code,
+    headers: {
+      'content-type': 'application/json',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET,POST,OPTIONS',
+      'access-control-allow-headers': 'content-type,x-admin-key'
+    },
+    body: JSON.stringify(data)
   };
-  db.list.push(item);
-  await blobSetJSON(REVIEWS_KEY, db);
-
-  return jsonResp(200, { ok: true, id });
 }
 
-async function adminAction(req) {
-  requireAdmin(req);
-  const body = await parseBody(req);
-  const { id, action, ownerReply } = body || {};
-  if (!id || !action) return jsonResp(400, { error: 'id 與 action 必填' });
-
-  const db = await blobGetJSON(REVIEWS_KEY, { list: [] });
-  const idx = db.list.findIndex(r => r.id === id);
-  if (idx === -1) return jsonResp(404, { error: 'review not found' });
-
-  const item = db.list[idx];
-
-  if (action === 'approve') {
-    item.status = 'approved';
-    // 發放折扣碼
-    const coupons = await blobGetJSON(COUPONS_KEY, { used: {}, issued: {} });
-    let code;
-    do { code = generateCoupon(); } while (coupons.issued?.[code]);
-    coupons.issued = coupons.issued || {};
-    coupons.issued[code] = { created_at: new Date().toISOString(), review_id: id, order_id: item?.tokenPayload?.order_id || null };
-    item.couponCode = code;
-    await blobSetJSON(COUPONS_KEY, coupons);
-
-    if (item.email) {
-      try { await sendCouponByEmail({ toEmail: item.email, toName: item.name, coupon: code }); }
-      catch(e) { item.couponSendError = String(e.message || e); }
-    }
-  } else if (action === 'reject') {
-    item.status = 'rejected';
-  } else if (action === 'remove') {
-    item.status = 'removed';
-  } else if (action === 'reply') {
-    item.ownerReply = String(ownerReply || '');
-  } else {
-    return jsonResp(400, { error: '未知 action' });
-  }
-
-  db.list[idx] = item;
-  await blobSetJSON(REVIEWS_KEY, db);
-  return jsonResp(200, { ok: true, item });
+async function readJSON(store, key) {
+  const r = await store.get(key);
+  if (!r) return null;
+  return JSON.parse(await r.text());
+}
+async function writeJSON(store, key, obj) {
+  await store.set(key, JSON.stringify(obj), { contentType: 'application/json; charset=utf-8' });
+}
+async function appendIndex(store, status, id) {
+  const key = `idx_${status}.json`;
+  const arr = (await readJSON(store, key)) || [];
+  arr.unshift(id);
+  await writeJSON(store, key, arr);
 }
