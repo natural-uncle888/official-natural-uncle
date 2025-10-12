@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Natural Uncle｜使用者回饋審核</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Noto Color Emoji,Helvetica Neue,Arial,"Noto Sans",sans-serif}</style>
+</head>
+<body class="bg-emerald-50/30 text-gray-900">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-center gap-3">
+      <img src="https://res.cloudinary.com/dvz4druzc/image/upload/v1760272564/upscaled_no_bg_po1xtb.png" class="h-8" alt="Natural Uncle">
+      <h1 class="text-2xl font-bold">使用者回饋審核</h1>
+    </div>
+    <p class="text-sm text-gray-600 mt-1">以專屬連結投稿之回饋，請在此審核與回覆。需於 Netlify 設定 <code>ADMIN_KEY</code>。</p>
+
+    <div class="mt-6 flex gap-2 items-center">
+      <input id="adminKey" type="password" class="border rounded px-3 py-2 w-64" placeholder="X-Admin-Key">
+      <button id="btnLoad" class="px-4 py-2 rounded bg-emerald-600 text-white">載入待審核</button>
+    </div>
+
+    <div id="list" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  </div>
+
+<script>
+const API = '/.netlify/functions/reviews';
+
+async function loadPending() {
+  const res = await fetch(API + '?status=pending');
+  const data = await res.json();
+  const list = document.getElementById('list');
+  list.innerHTML = (data.items || []).map(tpl).join('');
+  bindActions();
+}
+
+function tpl(item) {
+  const imgs = (item.images||[]).map((url)=>`<img src="${url}" class="w-full aspect-[4/3] object-cover rounded-lg border">`).join('');
+  return `
+  <article class="bg-white rounded-2xl border p-4">
+    <div class="grid gap-3">${imgs}</div>
+    <div class="mt-3 text-sm text-gray-500">${new Date(item.createdAt).toLocaleString()}</div>
+    <div class="mt-1 font-semibold">${item.name} ｜ ${item.area}</div>
+    <div class="text-xs inline-flex bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">${item.service}</div>
+    <p class="mt-2 text-gray-700">${escapeHtml(item.comment||'')}</p>
+    <div class="mt-3 flex items-center gap-2">
+      <button data-id="${item.id}" data-action="approve" class="px-3 py-1.5 rounded bg-emerald-600 text-white text-sm">通過並發券</button>
+      <button data-id="${item.id}" data-action="reject" class="px-3 py-1.5 rounded border text-sm">退回</button>
+      <button data-id="${item.id}" data-action="remove" class="px-3 py-1.5 rounded border text-sm">撤下</button>
+    </div>
+    <div class="mt-3">
+      <label class="text-xs text-gray-500">店家回覆：</label>
+      <textarea data-id="${item.id}" class="mt-1 w-full border rounded p-2" rows="3" placeholder="Natural Uncle 客服回覆"></textarea>
+      <button data-id="${item.id}" data-action="reply" class="mt-2 px-3 py-1.5 rounded bg-emerald-600 text-white text-sm">送出回覆</button>
+    </div>
+  </article>`
+}
+
+function bindActions() {
+  document.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      const adminKey = document.getElementById('adminKey').value.trim();
+      const payload = { id, action };
+      if (action === 'reply') {
+        const ta = document.querySelector(`textarea[data-id="${id}"]`);
+        payload.ownerReply = ta.value;
+      }
+      const res = await fetch(API, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) return alert(data.error || '操作失敗');
+      alert('完成！');
+      loadPending();
+    });
+  });
+}
+
+function escapeHtml(str){return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));}
+
+document.getElementById('btnLoad').addEventListener('click', loadPending);
+</script>
+</body>
+</html>

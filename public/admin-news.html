@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <!-- 新增 favicon -->
+  <link rel="icon" href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png" type="image/png"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>最新消息｜公告管理（上傳設定可收合＋內建色票表）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- CSP：保留 unsafe-inline 讓本頁內嵌 <script> 能執行；若改為外部 JS 可移除此設定 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.tailwindcss.com; connect-src 'self' https://api.github.com; img-src 'self' data:; style-src 'unsafe-inline' 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理（上傳設定可收合＋內建色票表）</h1>
+
+    <!-- Action Bar -->
+    <div class="flex flex-wrap gap-2 items-center mb-4">
+      <button id="btn-load" class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800">從伺服器載入 /news.json</button>
+
+      <label class="px-4 py-2 rounded bg-white border cursor-pointer hover:bg-slate-100">
+        從本機匯入 JSON
+        <input id="file-input" type="file" accept="application/json" class="hidden" />
+      </label>
+
+      <button id="btn-add" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">新增一筆</button>
+      <button id="btn-download" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">下載 news.json</button>
+
+      <!-- Toggle for GitHub settings -->
+      <button id="btn-upload-toggle" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500" aria-expanded="false" aria-controls="gh-panel">上傳到 GitHub</button>
+
+      <!-- Offline color palette modal trigger -->
+      <button id="btn-colors" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">色碼表</button>
+
+      <span id="dirty-ind" class="ml-2 text-xs text-amber-600 hidden">有未儲存變更</span>
+    </div>
+
+    <!-- Collapsible GitHub Settings Panel (hidden by default) -->
+    <div id="gh-panel" class="hidden p-4 bg-white rounded-xl border mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-base font-semibold">上傳設定</div>
+        <button id="btn-upload-close" class="text-sm text-slate-500 hover:underline">隱藏</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Owner</label>
+          <input id="gh-owner" class="w-full border rounded px-2 py-1" placeholder="your-org-or-user" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Repo</label>
+          <input id="gh-repo" class="w-full border rounded px-2 py-1" placeholder="your-repo" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Branch</label>
+          <input id="gh-branch" class="w-full border rounded px-2 py-1" placeholder="main" value="main" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Path</label>
+          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="news.json" value="news.json" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">GitHub Token (PAT)</label>
+          <input id="gh-token" type="password" class="w-full border rounded px-2 py-1" placeholder="ghp_... 或 fine-grained" />
+        </div>
+        <div class="md:col-span-5 flex items-center gap-3">
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="remember-settings" type="checkbox" class="border rounded" /> 記住以上設定（不含 Token）
+          </label>
+          <!-- 真正執行上傳的按鈕還是在面板內 -->
+          <button id="btn-upload" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500">執行上傳</button>
+          <span id="gh-status" class="text-sm text-slate-600" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items Container -->
+    <div id="items" class="space-y-6"></div>
+  </div>
+
+  <!-- ===== Offline Color Palette Modal ===== -->
+  <div id="color-modal" class="fixed inset-0 z-50 hidden">
+    <div id="color-backdrop" class="absolute inset-0 bg-black/40"></div>
+    <div class="relative mx-auto my-10 w-[92%] max-w-5xl">
+      <div class="bg-white rounded-2xl shadow-xl border max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b">
+          <div class="font-semibold">色碼表（離線）</div>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-slate-500">點色塊可複製 HEX</span>
+            <button id="color-close" class="px-2 py-1 text-sm rounded bg-slate-100 hover:bg-slate-200">關閉</button>
+          </div>
+        </div>
+        <div class="p-4 overflow-y-auto grow">
+          <!-- search/filter optional -->
+          <div class="mb-3 flex gap-2 items-center">
+            <input id="color-filter" class="border rounded px-2 py-1 w-full md:w-80" placeholder="篩選名稱或 #HEX，例如 red 或 #FF0000">
+            <button id="color-clear" class="px-3 py-1 rounded border bg-white hover:bg-slate-50 text-sm">清除</button>
+          </div>
+
+          <div id="color-sections" class="space-y-6"></div>
+        </div>
+      </div>
+      <!-- toast -->
+      <div id="toast" class="pointer-events-none fixed left-1/2 -translate-x-1/2 top-4 hidden">
+        <div class="rounded-lg bg-black/80 text-white text-sm px-3 py-2 shadow">已複製</div>
+      </div>
+    </div>
+  </div>
+
+  <template id="color-section-tpl">
+    <section>
+      <h3 class="text-sm font-semibold text-slate-600 mb-2"></h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2"></div>
+    </section>
+  </template>
+
+  <template id="color-chip-tpl">
+    <button class="group w-full text-left rounded-lg border overflow-hidden hover:shadow focus:outline-none focus:ring-2 focus:ring-emerald-500">
+      <div class="h-10 w-full"></div>
+      <div class="px-2 py-1 text-xs flex items-center justify-between">
+        <span class="font-mono"></span>
+        <span class="opacity-0 group-hover:opacity-100 transition text-[10px] text-emerald-700">點我複製</span>
+      </div>
+    </button>
+  </template>
+
+  <template id="item-tpl">
+    <div class="p-4 bg-white rounded-xl border">
+      <div class="flex items-start justify-between gap-3">
+        <div class="text-lg font-semibold">公告項目</div>
+        <button class="btn-remove text-red-600 text-sm hover:underline">刪除此筆</button>
+      </div>
+
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">ID</label>
+          <input class="f-id w-full border rounded px-2 py-1" placeholder="ann-20251005-001" />
+          <small class="text-slate-500">只允許小寫英數與連字號，需唯一。</small>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Type</label>
+          <select class="f-type w-full border rounded px-2 py-1">
+            <option value="promo">promo</option>
+            <option value="announce">announce</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 mt-6 md:mt-0">
+          <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" class="f-pinned"> 置頂</label>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Badge</label>
+          <input class="f-badge w-full border rounded px-2 py-1" placeholder="Hot" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Title</label>
+          <input class="f-title w-full border rounded px-2 py-1" placeholder="標題" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Period（第一行文字）</label>
+          <input class="f-period w-full border rounded px-2 py-1" placeholder="2025/10/01 – 2025/10/31" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">開始日</label>
+          <input type="date" class="f-start w-full border rounded px-2 py-1" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">結束日</label>
+          <input type="date" class="f-end w-full border rounded px-2 py-1" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">展開按鈕文字</label>
+          <input class="f-summary-btn w-full border rounded px-2 py-1" placeholder="查看內容" />
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-sm font-medium">第三行(主內容)</label>
+            <div class="flex items-center gap-2">
+              <label class="text-sm">主內容 格式</label>
+              <select class="f-summary-format border rounded px-2 py-1 text-sm">
+                <option value="text">純文字（保留換行）</option>
+                <option value="html">HTML（支援粗體/顏色/大小/置中）</option>
+              </select>
+            </div>
+          </div>
+          <textarea class="f-summary w-full border rounded px-2 py-1 h-28" placeholder="例：<b>粗體</b>、<span style='color:red;font-size:18px;text-align:center;display:block;'>紅 18px 置中</span>、<br>換行"></textarea>
+          <!-- 清楚的語法示例 -->
+          <small class="block text-slate-500 mt-1">
+            HTML 模式可用：
+            <ul class="list-disc pl-5">
+              <li><code>&lt;b&gt;粗體&lt;/b&gt;</code> → <b>粗體</b></li>
+              <li><code>&lt;span style="color:red"&gt;紅色字&lt;/span&gt;</code> → <span style="color:red;">紅色字</span></li>
+              <li><code>&lt;span style="font-size:20px"&gt;20px 字體&lt;/span&gt;</code> → <span style="font-size:20px;">20px 字體</span></li>
+              <li><code>&lt;span style="text-align:center;display:block;"&gt;置中&lt;/span&gt;</code> → <span style="text-align:center;display:block;">置中</span></li>
+              <li><code>第一行&lt;br&gt;第二行</code> → 第一行<br>第二行</li>
+            </ul>
+          </small>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">展開內容（每行一點）</label>
+          <textarea class="f-bullets w-full border rounded px-2 py-1 h-28" placeholder="第一點
+第二點
+第三點"></textarea>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">CTA 文字</label>
+          <input class="f-cta-text w-full border rounded px-2 py-1" placeholder="立即前往" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">CTA 連結</label>
+          <input class="f-cta-href w-full border rounded px-2 py-1" placeholder="https://example.com" />
+        </div>
+      </div>
+
+      <!-- 預覽區 -->
+      <div class="mt-4 border rounded p-3">
+        <div class="text-sm text-slate-500 mb-2">前台預覽</div>
+        <div class="preview-summary"></div>
+        <ul class="preview-bullets list-disc pl-5 mt-2"></ul>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    // ==== State ====
+    let items = [];
+    const elItems = document.getElementById('items');
+
+    // ==== Toggle GitHub panel ====
+    const ghPanel = document.getElementById('gh-panel');
+    const btnToggle = document.getElementById('btn-upload-toggle');
+    const btnClose = document.getElementById('btn-upload-close');
+
+    function setPanel(open) {
+      ghPanel.classList.toggle('hidden', !open);
+      btnToggle.setAttribute('aria-expanded', String(open));
+      // 捲動到面板（開啟時）
+      if (open) ghPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // 記住狀態
+      localStorage.setItem('news-admin-gh-open', open ? '1' : '0');
+    }
+    btnToggle.addEventListener('click', () => {
+      const open = ghPanel.classList.contains('hidden');
+      setPanel(open);
+    });
+    btnClose.addEventListener('click', () => setPanel(false));
+
+    // 初始化讀取開關狀態
+    (function initPanelState() {
+      const open = localStorage.getItem('news-admin-gh-open') === '1';
+      setPanel(open);
+    })();
+
+    // ==== Utilities ====
+    function uid() {
+      // 更穩定的 ID 生成
+      if (crypto?.randomUUID) return 'ann-' + crypto.randomUUID();
+      return 'ann-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    }
+
+    function setDirty(v = true) {
+      document.getElementById('dirty-ind').classList.toggle('hidden', !v);
+      window.__dirty = v;
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (window.__dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    function base64EncodeUnicode(str) {
+      // UTF-8 safe base64
+      const utf8 = new TextEncoder().encode(str);
+      let binary = '';
+      utf8.forEach(b => binary += String.fromCharCode(b));
+      return btoa(binary);
+    }
+
+    // === 擴充允許 color + font-size + text-align ===
+    function sanitizeSummaryHTML(html) {
+      const allowed = ['B','STRONG','I','EM','U','BR','SPAN'];
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      (function walk(node) {
+        for (const child of [...node.children]) {
+          if (!allowed.includes(child.tagName)) {
+            const text = document.createTextNode(child.textContent);
+            child.replaceWith(text);
+            continue;
+          }
+          if (child.tagName === 'SPAN') {
+            const color = child.style.color;        // 允許 color
+            const fsize = child.style.fontSize;     // 允許 font-size
+            const tAlign = child.style.textAlign;   // 允許 text-align
+            child.removeAttribute('style');         // 清空原 style 再逐一寫回允許的
+            if (color) child.style.color = color;
+            if (fsize) child.style.fontSize = fsize;
+            if (tAlign) child.style.textAlign = tAlign;
+            // 移除所有非 style 的屬性
+            for (const attr of [...child.attributes]) {
+              if (attr.name !== 'style') child.removeAttribute(attr.name);
+            }
+          } else {
+            // 其他允許標籤移除所有屬性（避免注入）
+            for (const attr of [...child.attributes]) child.removeAttribute(attr.name);
+          }
+          walk(child);
+        }
+      })(tmp);
+      return tmp.innerHTML;
+    }
+
+    function validateAll(items) {
+      const idSet = new Set();
+      const errors = [];
+      const idRe = /^[a-z0-9-]+$/;
+
+      items.forEach((it, idx) => {
+        const p = (field) => `第 ${idx+1} 筆（ID: ${it.id || '未填'}）的「${field}」`;
+        if (!it.id) errors.push(p('ID') + ' 必填');
+        if (it.id && !idRe.test(it.id)) errors.push(p('ID') + ' 僅能包含小寫英數與連字號');
+        if (it.id) {
+          if (idSet.has(it.id)) errors.push(p('ID') + ' 重複');
+          idSet.add(it.id);
+        }
+        if (!['promo','announce'].includes(it.type)) errors.push(p('Type') + ' 限定 promo/announce');
+        if (it.startsAt && !/^\d{4}-\d{2}-\d{2}$/.test(it.startsAt)) errors.push(p('開始日') + ' 需為 YYYY-MM-DD');
+        if (it.endsAt && !/^\d{4}-\d{2}-\d{2}$/.test(it.endsAt)) errors.push(p('結束日') + ' 需為 YYYY-MM-DD');
+        if (it.startsAt && it.endsAt && it.startsAt > it.endsAt) errors.push(p('日期區間') + ' 開始不可晚於結束');
+        if (it.cta?.href) {
+          const ok = /^(https?:\/\/|mailto:)/i.test(it.cta.href);
+          if (!ok) errors.push(p('CTA 連結') + ' 需以 http(s):// 或 mailto: 開頭');
+        }
+        if (it.summaryFormat && !['text','html'].includes(it.summaryFormat)) errors.push(p('Summary 格式') + ' 僅允許 text/html');
+        if (Array.isArray(it.bullets) && it.bullets.length > 20) errors.push(p('Bullets') + ' 最多 20 行');
+      });
+
+      return errors;
+    }
+
+    // ==== Rendering ====
+    function renderItems() {
+      elItems.innerHTML = '';
+      items.forEach((item, idx) => {
+        const tpl = document.getElementById('item-tpl');
+        const el = tpl.content.firstElementChild.cloneNode(true);
+
+        const q = (sel) => el.querySelector(sel);
+        const setVal = (sel, val) => q(sel).value = val ?? '';
+
+        setVal('.f-id', item.id);
+        q('.f-id').addEventListener('input', (e) => { item.id = e.target.value.trim(); setDirty(); });
+
+        q('.f-type').value = item.type || 'promo';
+        q('.f-type').addEventListener('change', (e) => { item.type = e.target.value; setDirty(); });
+
+        q('.f-pinned').checked = !!item.pinned;
+        q('.f-pinned').addEventListener('change', (e) => { item.pinned = e.target.checked; setDirty(); });
+
+        setVal('.f-badge', item.badge);
+        q('.f-badge').addEventListener('input', (e) => { item.badge = e.target.value; setDirty(); });
+
+        setVal('.f-title', item.title);
+        q('.f-title').addEventListener('input', (e) => { item.title = e.target.value; setDirty(); });
+
+        setVal('.f-period', item.period);
+        q('.f-period').addEventListener('input', (e) => { item.period = e.target.value; setDirty(); });
+
+        setVal('.f-start', item.startsAt);
+        q('.f-start').addEventListener('change', (e) => {
+          item.startsAt = e.target.value;
+          autoSyncPeriod(el, item);
+          setDirty();
+          renderPreviewFor(el, item);
+        });
+
+        setVal('.f-end', item.endsAt);
+        q('.f-end').addEventListener('change', (e) => {
+          item.endsAt = e.target.value;
+          autoSyncPeriod(el, item);
+          setDirty();
+          renderPreviewFor(el, item);
+        });
+
+        setVal('.f-summary-btn', item.summaryButtonText);
+        q('.f-summary-btn').addEventListener('input', (e) => { item.summaryButtonText = e.target.value; setDirty(); });
+
+        q('.f-summary-format').value = item.summaryFormat || 'text';
+        q('.f-summary-format').addEventListener('change', (e) => {
+          item.summaryFormat = e.target.value;
+          setDirty();
+          renderPreviewFor(el, item);
+        });
+
+        setVal('.f-summary', item.summary);
+        q('.f-summary').addEventListener('input', (e) => {
+          item.summary = e.target.value;
+          setDirty();
+          renderPreviewFor(el, item);
+        });
+
+        q('.f-bullets').value = (item.bullets || []).join('\n');
+        q('.f-bullets').addEventListener('input', (e) => {
+          const lines = e.target.value.split(/\r?\n/).map(s => s.trim());
+          item.bullets = lines.filter(Boolean);
+          setDirty();
+          renderPreviewFor(el, item);
+        });
+
+        setVal('.f-cta-text', item.cta?.text);
+        q('.f-cta-text').addEventListener('input', (e) => {
+          item.cta = item.cta || {}; item.cta.text = e.target.value; setDirty();
+        });
+
+        setVal('.f-cta-href', item.cta?.href);
+        q('.f-cta-href').addEventListener('input', (e) => {
+          item.cta = item.cta || {}; item.cta.href = e.target.value; setDirty();
+        });
+
+        q('.btn-remove').addEventListener('click', () => {
+          if (!confirm('確定刪除此筆？')) return;
+          items.splice(idx, 1);
+          renderItems();
+          setDirty();
+        });
+
+        elItems.appendChild(el);
+        renderPreviewFor(el, item);
+      });
+    }
+
+    function ymdToPeriod(a, b) {
+      if (!a || !b) return '';
+      const [y1,m1,d1] = a.split('-');
+      const [y2,m2,d2] = b.split('-');
+      return `${y1}/${m1}/${d1} – ${y2}/${m2}/${d2}`;
+    }
+
+    function autoSyncPeriod(el, item) {
+      if (item.startsAt && item.endsAt) {
+        const s = ymdToPeriod(item.startsAt, item.endsAt);
+        item.period = s;
+        el.querySelector('.f-period').value = s;
+      }
+    }
+
+    function renderPreviewFor(el, item) {
+      const sumEl = el.querySelector('.preview-summary');
+      const bulletsEl = el.querySelector('.preview-bullets');
+
+      if ((item.summaryFormat || 'text') === 'html') {
+        sumEl.innerHTML = sanitizeSummaryHTML(item.summary || '');
+        sumEl.style.whiteSpace = 'normal';
+      } else {
+        sumEl.textContent = item.summary || '';
+        sumEl.style.whiteSpace = 'pre-line';
+      }
+
+      bulletsEl.innerHTML = '';
+      (item.bullets || []).forEach(line => {
+        if (!line) return;
+        const li = document.createElement('li');
+        li.textContent = line;
+        bulletsEl.appendChild(li);
+      });
+    }
+
+    // ==== Actions ====
+    document.getElementById('btn-add').addEventListener('click', () => {
+      items.unshift({
+        id: (crypto?.randomUUID ? 'ann-' + crypto.randomUUID() : 'ann-' + Date.now()),
+        type: 'announce',
+        pinned: false,
+        badge: '',
+        title: '',
+        period: '',
+        startsAt: '',
+        endsAt: '',
+        summaryButtonText: '查看內容',
+        summaryFormat: 'text',
+        summary: '',
+        bullets: [],
+        cta: { text: '', href: '' }
+      });
+      renderItems();
+      setDirty();
+    });
+
+    document.getElementById('btn-load').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/news.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('JSON 不是陣列');
+        items = data.map(x => ({ ...x }));
+        renderItems();
+        setDirty(false);
+      } catch (e) {
+        alert('載入失敗：' + e.message);
+      }
+    });
+
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      try {
+        const txt = await f.text();
+        const data = JSON.parse(txt);
+        if (!Array.isArray(data)) throw new Error('JSON 不是陣列');
+        items = data.map(x => ({ ...x }));
+        renderItems();
+        setDirty();
+      } catch (err) {
+        alert('匯入失敗：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    });
+
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const errs = validateAll(items);
+      if (errs.length) { alert('下載前請先修正：\n- ' + errs.join('\n- ')); return; }
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'news.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setDirty(false);
+    });
+
+    // ==== GitHub Upload ====
+    const ghOwner = document.getElementById('gh-owner');
+    const ghRepo = document.getElementById('gh-repo');
+    const ghBranch = document.getElementById('gh-branch');
+    theGhPath = document.getElementById('gh-path');
+    const ghPath = theGhPath; // maintain original naming in code below
+    const ghToken = document.getElementById('gh-token');
+    const ghStatus = document.getElementById('gh-status');
+    const remember = document.getElementById('remember-settings');
+
+    // 設定記憶（不含 Token）
+    (function loadRemembered(){
+      const raw = localStorage.getItem('news-admin-gh');
+      if (!raw) return;
+      try {
+        const s = JSON.parse(raw);
+        ghOwner.value = s.owner || '';
+        ghRepo.value = s.repo || '';
+        ghBranch.value = s.branch || 'main';
+        ghPath.value = s.path || 'news.json';
+        remember.checked = true;
+      } catch {}
+    })();
+
+    remember.addEventListener('change', () => {
+      if (remember.checked) {
+        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
+        localStorage.setItem('news-admin-gh', JSON.stringify(s));
+      } else {
+        localStorage.removeItem('news-admin-gh');
+      }
+    });
+
+    ['input','change'].forEach(ev => {
+      [ghOwner, ghRepo, ghBranch, ghPath].forEach(el => el.addEventListener(ev, () => {
+        if (!remember.checked) return;
+        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
+        localStorage.setItem('news-admin-gh', JSON.stringify(s));
+      }));
+    });
+
+    async function githubRequest(path, method = 'GET', body) {
+      const token = ghToken.value.trim();
+      if (!token) throw new Error('請先輸入 GitHub Token');
+      const res = await fetch(`https://api.github.com${path}`, {
+        method,
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`GitHub ${res.status}: ${t}`);
+      }
+      return res.json();
+    }
+
+    async function getFileSHA(owner, repo, branch, path) {
+      try {
+        const data = await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`);
+        return data.sha; // 若存在，回傳 sha
+      } catch (e) {
+        // 不存在或無權限會丟錯；不存在時回傳 null 讓後續當新檔案處理
+        return null;
+      }
+    }
+
+    document.getElementById('btn-upload').addEventListener('click', async () => {
+      const owner = ghOwner.value.trim();
+      const repo = ghRepo.value.trim();
+      const branch = ghBranch.value.trim() || 'main';
+      const path = ghPath.value.trim() || 'news.json';
+      ghStatus.textContent = '檢查中…';
+
+      const errs = validateAll(items);
+      if (errs.length) { alert('上傳前請先修正：\n- ' + errs.join('\n- ')); ghStatus.textContent = ''; return; }
+
+      try {
+        const sha = await getFileSHA(owner, repo, branch, path);
+        ghStatus.textContent = '上傳中…';
+        const content = base64EncodeUnicode(JSON.stringify(items, null, 2));
+        const message = `chore(news): update news.json @ ${new Date().toISOString()}`;
+        const body = { message, content, branch };
+        if (sha) body.sha = sha;
+        await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, 'PUT', body);
+        ghStatus.textContent = '✅ 上傳完成';
+        setDirty(false);
+      } catch (e) {
+        ghStatus.textContent = '❌ 失敗';
+        alert('上傳失敗：' + e.message + '\n\n常見原因：\n- Token 未授權 Contents: Read & write 或未 Authorize SSO\n- Owner/Repo/Branch/Path 錯誤\n- 分支保護規則阻擋直接寫入');
+      }
+    });
+
+    // ===== Offline Color Palette =====
+    const btnColors = document.getElementById('btn-colors');
+    const colorModal = document.getElementById('color-modal');
+    const colorBackdrop = document.getElementById('color-backdrop');
+    const colorClose = document.getElementById('color-close');
+    const colorSections = document.getElementById('color-sections');
+    const filterInput = document.getElementById('color-filter');
+    const filterClear = document.getElementById('color-clear');
+    const toast = document.getElementById('toast');
+
+    const PALETTE = [
+      { label: '灰階 Gray', colors: ['#000000','#111827','#1F2937','#374151','#4B5563','#6B7280','#9CA3AF','#D1D5DB','#E5E7EB','#F3F4F6','#FFFFFF'] },
+      { label: '紅 Red', colors: ['#7F1D1D','#991B1B','#B91C1C','#DC2626','#EF4444','#F87171','#FCA5A5','#FEE2E2'] },
+      { label: '橙 Orange', colors: ['#7C2D12','#9A3412','#C2410C','#EA580C','#F97316','#FB923C','#FDBA74','#FFEDD5'] },
+      { label: '黃 Yellow', colors: ['#713F12','#854D0E','#A16207','#CA8A04','#EAB308','#FACC15','#FDE047','#FEF9C3'] },
+      { label: '綠 Green', colors: ['#14532D','#166534','#15803D','#16A34A','#22C55E','#4ADE80','#86EFAC','#DCFCE7'] },
+      { label: '青 Teal', colors: ['#134E4A','#115E59','#0F766E','#0D9488','#14B8A6','#2DD4BF','#99F6E4','#CCFBF1'] },
+      { label: '藍 Blue', colors: ['#1E3A8A','#1D4ED8','#2563EB','#3B82F6','#60A5FA','#93C5FD','#BFDBFE','#DBEAFE'] },
+      { label: '靛 Indigo', colors: ['#312E81','#3730A3','#4338CA','#4F46E5','#6366F1','#818CF8','#A5B4FC','#E0E7FF'] },
+      { label: '紫 Purple', colors: ['#581C87','#6B21A8','#7E22CE','#8B5CF6','#A78BFA','#C4B5FD','#E9D5FF','#F5F3FF'] },
+      { label: '粉 Pink', colors: ['#831843','#9D174D','#BE185D','#DB2777','#EC4899','#F472B6','#F9A8D4','#FCE7F3'] }
+    ];
+
+    function openColors() {
+      document.body.classList.add("overflow-hidden");
+      colorModal.classList.remove('hidden');
+      filterInput.focus();
+      if (!colorSections.dataset.rendered) {
+        renderPalette();
+        colorSections.dataset.rendered = '1';
+      }
+    }
+    function closeColors() {
+      document.body.classList.remove("overflow-hidden");
+      colorModal.classList.add('hidden');
+    }
+    btnColors.addEventListener('click', openColors);
+    colorBackdrop.addEventListener('click', closeColors);
+    colorClose.addEventListener('click', closeColors);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeColors(); });
+
+    function showToast(msg='已複製') {
+      toast.querySelector('div').textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.classList.add('hidden'), 1000);
+    }
+
+    function renderPalette() {
+      const tplSec = document.getElementById('color-section-tpl');
+      const tplChip = document.getElementById('color-chip-tpl');
+
+      colorSections.innerHTML = '';
+      for (const sec of PALETTE) {
+        const secEl = tplSec.content.firstElementChild.cloneNode(true);
+        secEl.querySelector('h3').textContent = sec.label;
+        const grid = secEl.querySelector('div.grid');
+
+        for (const hex of sec.colors) {
+          const chip = tplChip.content.firstElementChild.cloneNode(true);
+          const sw = chip.querySelector('div.h-10');
+          const code = chip.querySelector('span.font-mono');
+          sw.style.backgroundColor = hex;
+          code.textContent = hex;
+          chip.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(hex);
+              showToast(`已複製 ${hex}`);
+            } catch {
+              showToast('複製失敗，請手動選取');
+            }
+          });
+          grid.appendChild(chip);
+        }
+
+        colorSections.appendChild(secEl);
+      }
+    }
+
+    function filterPalette(q) {
+      const query = (q || '').trim().toLowerCase();
+      const sections = [...colorSections.querySelectorAll('section')];
+      sections.forEach(sec => {
+        const title = sec.querySelector('h3').textContent.toLowerCase();
+        const chips = [...sec.querySelectorAll('button')];
+        let any = false;
+        chips.forEach(ch => {
+          const hex = ch.querySelector('.font-mono').textContent.toLowerCase();
+          const hit = !query || hex.includes(query) || title.includes(query);
+          ch.classList.toggle('hidden', !hit);
+          any = any || hit;
+        });
+        sec.classList.toggle('hidden', !any);
+      });
+    }
+    filterInput.addEventListener('input', (e) => filterPalette(e.target.value));
+    filterClear.addEventListener('click', () => { filterInput.value=''; filterPalette(''); filterInput.focus(); });
+
+    // 首次載入渲染
+    renderItems();
+  </script>
+</body>
+</html>
