@@ -57,7 +57,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Path</label>
-          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="news.json" value="news.json" />
+          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="public/news.json" value="public/news.json" />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">GitHub Token (PAT)</label>
@@ -495,7 +495,7 @@
 
     document.getElementById('btn-load').addEventListener('click', async () => {
       try {
-        const res = await fetch('/news.json', { cache: 'no-store' });
+        const res = await fetch('/public/news.json', { cache: 'no-store' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error('JSON 不是陣列');
