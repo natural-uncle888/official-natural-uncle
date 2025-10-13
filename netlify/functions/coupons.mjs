@@ -1,19 +1,6 @@
-# Netlify Functions & Admin UI — Cloudinary 版優惠碼與評論後台整合
+// Cloudinary Coupons API
+// 功能：發送折扣碼 + 查詢折扣碼 + 初始化固定折扣碼 NATURAL200
 
-本文件包含：
-
-1. `netlify/functions/coupons.mjs`（完整可用）
-2. `admin-reviews.html` 需加入的前端 JS 區塊（可直接覆蓋或插入）
-3. 測試與部署說明
-
----
-
-## 1) `netlify/functions/coupons.mjs`
-
-**用途**：用 Cloudinary Raw JSON 管理固定折扣碼 `NATURAL200`；提供查詢、初始化、Email 寄送。
-
-```js
-// netlify/functions/coupons.mjs
 import crypto from 'node:crypto';
 
 // ===== 環境變數 =====
