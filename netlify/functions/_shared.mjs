@@ -1,4 +1,3 @@
-// netlify/functions/_shared.mjs
 import crypto from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 
@@ -21,14 +20,7 @@ export const ENV = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
-  MAX_WIDTH: parseInt(process.env.MAX_WIDTH || '1600', 10),
-
-  WATERMARK_URL: process.env.WATERMARK_URL || '',
-  WATERMARK_WIDTH: parseInt(process.env.WATERMARK_WIDTH || '120', 10),
-  WATERMARK_OPACITY: parseInt(process.env.WATERMARK_OPACITY || '45', 10),
-  WATERMARK_GRAVITY: process.env.WATERMARK_GRAVITY || 'south_east',
-  WATERMARK_OFFSET_X: parseInt(process.env.WATERMARK_OFFSET_X || '20', 10),
-  WATERMARK_OFFSET_Y: parseInt(process.env.WATERMARK_OFFSET_Y || '16', 10),
+  MAX_WIDTH: parseInt(process.env.MAX_WIDTH || '1600', 10)
 };
 
 export function jsonResp(status, data) {
@@ -112,9 +104,8 @@ export async function sendCouponByEmail({ toEmail, toName, coupon }) {
   return data;
 }
 
-// === Cloudinary server-side upload with transformation + watermark ===
+// === Cloudinary simple upload without watermark ===
 function cloudinarySign(params) {
-  // Cloudinary signature: sort keys alphabetically, concat as key=value&..., append API_SECRET, sha1
   const entries = Object.entries(params).filter(([k,v]) => v !== undefined && v !== null && v !== '');
   entries.sort(([a],[b]) => a.localeCompare(b));
   const toSign = entries.map(([k,v]) => `${k}=${v}`).join('&') + ENV.CLOUDINARY_API_SECRET;
@@ -123,22 +114,12 @@ function cloudinarySign(params) {
 
 export async function cloudinaryUpload({ file, folder = 'ugc', public_id = undefined }) {
   const ts = Math.floor(Date.now()/1000);
-
-  // Overlay watermark via fetch URL
-  const overlay = `fetch:${encodeURIComponent(ENV.WATERMARK_URL)}`;
-
-  // Build eager transformation string (apply base transform + watermark)
-  const baseT = `q_auto,f_auto,w_${ENV.MAX_WIDTH},fl_strip_profile`;
-  const wmT = `l_${overlay},w_${ENV.WATERMARK_WIDTH},o_${ENV.WATERMARK_OPACITY},g_${ENV.WATERMARK_GRAVITY},x_${ENV.WATERMARK_OFFSET_X},y_${ENV.WATERMARK_OFFSET_Y}`;
-  const transformation = `${baseT}/${wmT}`;
+  const transformation = `q_auto,f_auto,w_${ENV.MAX_WIDTH},fl_strip_profile`;
 
   const params = {
     timestamp: ts,
     folder,
-    transformation,
-    // If you prefer eager transformations:
-    // eager: transformation,
-    // eager_async: true,
+    transformation
   };
   if (public_id) params.public_id = public_id;
 
@@ -153,5 +134,5 @@ export async function cloudinaryUpload({ file, folder = 'ugc', public_id = undef
   const res = await fetch(url, { method: 'POST', body: form });
   const data = await res.json().catch(()=>({}));
   if (!res.ok) throw new Error('Cloudinary upload failed: ' + JSON.stringify(data));
-  return data; // contains secure_url, public_id, width, height, etc.
+  return data;
 }
