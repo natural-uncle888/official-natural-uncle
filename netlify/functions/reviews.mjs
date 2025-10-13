@@ -1,33 +1,76 @@
-// fixed reviews.js
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-exports.handler = async (event) => {
+import { jsonResp, parseBody, blobGetJSON, blobSetJSON, cloudinaryUpload, generateCoupon, sendCouponByEmail, requireAdmin, ENV } from './_shared.mjs';
+
+const REVIEW_KEY = 'reviews/index.json';
+
+export default async (req) => {
   try {
-    const body = JSON.parse(event.body);
-    if (!body.name || !body.text) {
-      return { statusCode: 400, body: JSON.stringify({ error: "缺少必要欄位" }) };
+    // === GET：載入待審核 ===
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const status = url.searchParams.get('status') || 'pending';
+      const db = await blobGetJSON(REVIEW_KEY, []);
+      const items = db.filter(r => r.status === status);
+      return jsonResp(200, { items });
     }
-    if (!body.images || body.images.length === 0) {
-      return { statusCode: 400, body: JSON.stringify({ error: "請至少上傳一張圖片" }) };
+
+    // === PUT：審核或回覆 ===
+    if (req.method === 'PUT') {
+      requireAdmin(req);
+      const { id, action, ownerReply } = await parseBody(req);
+      const db = await blobGetJSON(REVIEW_KEY, []);
+      const item = db.find(r => r.id === id);
+      if (!item) return jsonResp(404, { error: '找不到資料' });
+
+      if (action === 'approve') {
+        item.status = 'approved';
+        if (item.email) {
+          const coupon = generateCoupon();
+          await sendCouponByEmail({ toEmail: item.email, toName: item.name, coupon });
+          item.coupon = coupon;
+        }
+      } else if (action === 'reject') {
+        item.status = 'rejected';
+      } else if (action === 'remove') {
+        item.status = 'removed';
+      } else if (action === 'reply') {
+        item.ownerReply = ownerReply || '';
+      } else {
+        return jsonResp(400, { error: '未知的操作' });
+      }
+
+      await blobSetJSON(REVIEW_KEY, db);
+      return jsonResp(200, { ok: true });
     }
-    const uploadPromises = body.images.slice(0, 3).map((image) =>
-      cloudinary.uploader.upload(image, {
-        folder: "ugc",
-        transformation: [{ width: 1200, height: 1200, crop: "limit" }]
-      })
-    );
-    const uploadResults = await Promise.all(uploadPromises);
-    const imageUrls = uploadResults.map((file) => file.secure_url);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "投稿成功", images: imageUrls })
+
+    // === POST：提交新評論 ===
+    if (req.method !== 'POST') return jsonResp(405, { error: 'Method not allowed' });
+    const { token, name, area, service, rating, text, images, email } = await parseBody(req);
+
+    if (!name || !text) return jsonResp(400, { error: '缺少必要欄位' });
+    if (!images || images.length === 0) return jsonResp(400, { error: '請至少上傳一張圖片' });
+
+    const uploadedImages = [];
+    for (const img of images.slice(0, 3)) {
+      const up = await cloudinaryUpload({ file: img });
+      uploadedImages.push(up.secure_url);
+    }
+
+    const review = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      name, area, service, rating, comment: text, images: uploadedImages,
+      email: email || '',
     };
-  } catch (error) {
-    console.error("Reviews API Error:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "伺服器錯誤，請稍後再試" }) };
+
+    const db = await blobGetJSON(REVIEW_KEY, []);
+    db.push(review);
+    await blobSetJSON(REVIEW_KEY, db);
+
+    return jsonResp(200, { message: '投稿成功' });
+
+  } catch (err) {
+    console.error('[reviews] Error:', err);
+    return jsonResp(err.status || 500, { error: err.message || 'Server error' });
   }
 };
