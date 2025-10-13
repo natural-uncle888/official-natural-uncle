@@ -1,5 +1,5 @@
-// Cloudinary Coupons API
-// 功能：發送折扣碼 + 查詢折扣碼 + 初始化固定折扣碼 NATURAL200
+// coupons.mjs - Cloudinary 版本固定折扣碼 NATURAL200
+// 功能：初始化折扣碼、查詢折扣碼、寄送 Email（Brevo）
 
 import crypto from 'node:crypto';
 
