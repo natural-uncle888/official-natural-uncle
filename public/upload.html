@@ -1,95 +1,213 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<link rel="icon" type="image/png" href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png"/>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>感謝您讓我們服務｜分享這次成果照</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Noto Color Emoji,Helvetica Neue,Arial,"Noto Sans",sans-serif}</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Natural Uncle｜回饋投稿（Cloudinary 版）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Noto Color Emoji,Helvetica Neue,Arial,"Noto Sans",sans-serif}
+    .dropzone.dragover{border-color:#059669;background-color:#ecfdf5}
+  </style>
 </head>
-<body class="bg-neutral-100 text-gray-800">
-<div class="max-w-xl mx-auto px-4 py-10">
-<div class="flex items-center gap-3">
-<img src="https://res.cloudinary.com/dvz4druzc/image/upload/v1760272564/upscaled_no_bg_po1xtb.png" class="h-8" alt="Natural Uncle">
-<div class="font-semibold">Natural Uncle</div>
-</div>
-<h1 class="mt-6 text-2xl text-gray-800 font-bold text-amber-800">感謝您讓我們服務</h1>
-<p class="mt-2 text-gray-800 text-sm">完成服務的 14 天內可投稿。審核通過將贈 <strong>$100 回饋折抵</strong>（不限評分）。</p>
-<form id="frm" class="mt-6 grid gap-4">
-<input type="hidden" id="token" name="token">
-<div>
-<label class="block text-sm text-gray-800">您的稱呼（顯示為：姓氏＋先生/小姐）</label>
-<input id="name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" required>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-sm text-gray-800">地區</label>
-<input id="area" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" required>
-</div>
-<div>
-<label class="block text-sm text-gray-800">服務項目</label>
-<input id="service" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" required>
-</div>
-</div>
-<div>
-<label class="block text-sm text-gray-800">評分</label>
-<select id="rating" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2">
-<option value="5">★★★★★（非常滿意）</option>
-<option value="4">★★★★☆</option>
-<option value="3">★★★☆☆</option>
-<option value="2">★★☆☆☆</option>
-<option value="1">★☆☆☆☆</option>
-</select>
-</div>
-<div>
-<label class="block text-sm text-gray-800">您的心得（30–200 字）</label>
-<textarea id="comment" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" rows="4" maxlength="400" required></textarea>
-</div>
-<div>
-<label class="block text-sm text-gray-800">照片（必須 1–3 張）</label>
-<input id="images" type="file" accept="image/*" multiple class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2" required>
-<p class="mt-1 text-xs text-gray-500">＊請上傳與本次服務相關之照片。</p>
-</div>
-<div>
-<label class="block text-sm text-gray-800">Email（選填，用於寄送折抵碼）</label>
-<input id="email" type="email" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2">
-</div>
-<button type="submit" class="mt-2 px-4 py-2 rounded-md bg-emerald-600 text-white">送出投稿</button>
-</form>
-<div id="ok" class="hidden mt-8 p-4 rounded-md bg-emerald-50 border border-gray-300 border-emerald-200 text-emerald-800">
-已收到！我們會在 1–2 個工作天內審核並回覆。
-</div>
-</div>
-<script>
-const API='/.netlify/functions/reviews';
-function qs(id){return document.getElementById(id);}
-const url=new URL(location.href);qs('token').value=url.searchParams.get('r')||'';
-function fileToDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
-document.getElementById('frm').addEventListener('submit',async e=>{
-e.preventDefault();
-const files=qs('images').files;
-if(!files||files.length<1||files.length>3){alert('請上傳 1–3 張圖片');return;}
-const images=[];
-for(let i=0;i<files.length;i++){images.push(await fileToDataURL(files[i]));}
-const payload={
-  token:qs('token').value,
-  name:qs('name').value.trim(),
-  area:qs('area').value.trim(),
-  service:qs('service').value.trim(),
-  rating:qs('rating').value,
-  text:qs('comment').value.trim(), // ✅ 修正欄位名稱為 text
-  images,
-  email:qs('email').value.trim()
-};
-const res=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
-const data=await res.json();
-if(!res.ok){alert(data.error||'提交失敗');return;}
-qs('frm').classList.add('hidden');qs('ok').classList.remove('hidden');
-});
-</script>
+<body class="bg-emerald-50/30 text-gray-900">
+  <header class="max-w-3xl mx-auto px-4 pt-8">
+    <div class="flex items-center gap-3">
+      <img src="https://res.cloudinary.com/dvz4druzc/image/upload/v1760272564/upscaled_no_bg_po1xtb.png" class="h-9" alt="Natural Uncle" />
+      <h1 class="text-2xl font-bold">回饋投稿</h1>
+    </div>
+    <p class="text-sm text-gray-600 mt-1">分享您的使用心得（可上傳 1–3 張圖片）。通過審核後，您將收到 NT$200 回饋折扣碼。</p>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <section id="card" class="bg-white rounded-2xl shadow-sm border p-6">
+      <form id="form" class="space-y-5">
+        <!-- Honeypot (anti-spam) -->
+        <input type="text" name="company" autocomplete="off" tabindex="-1" class="hidden" aria-hidden="true" />
+
+        <div>
+          <label class="block text-sm font-medium">暱稱（必填）</label>
+          <input id="nickname" type="text" required class="mt-1 w-full border rounded px-3 py-2" placeholder="您的暱稱" />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Email（選填，用於寄送折扣碼）</label>
+            <input id="email" type="email" class="mt-1 w-full border rounded px-3 py-2" placeholder="example@email.com" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">評分（1–5）</label>
+            <select id="stars" class="mt-1 w-full border rounded px-3 py-2">
+              <option value="5">★★★★★ 非常滿意</option>
+              <option value="4">★★★★ 滿意</option>
+              <option value="3">★★★ 普通</option>
+              <option value="2">★★ 不滿意</option>
+              <option value="1">★ 非常不滿意</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">心得內容（必填）</label>
+          <textarea id="content" rows="5" required class="mt-1 w-full border rounded px-3 py-2" placeholder="請分享您的使用體驗與想法…"></textarea>
+          <p class="text-xs text-gray-500 mt-1">請避免個資與不雅內容。</p>
+        </div>
+
+        <!-- Images uploader (1–3) -->
+        <div>
+          <label class="block text-sm font-medium">圖片上傳（選填，最多 3 張，每張上限 5MB）</label>
+          <div id="dropzone" class="dropzone mt-2 rounded-2xl border border-dashed p-4 bg-white text-center cursor-pointer">
+            <p class="text-sm text-gray-600">拖曳圖片到此處，或點擊選擇</p>
+            <input id="fileInput" type="file" accept="image/*" multiple class="hidden" />
+          </div>
+          <div id="preview" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-xs text-gray-500">送出即代表您同意本網站顯示您的暱稱與內容（通過審核後）。</div>
+          <button id="submitBtn" class="px-4 py-2 rounded bg-emerald-600 text-white">送出回饋</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Success Panel -->
+    <section id="success" class="hidden bg-white rounded-2xl shadow-sm border p-6 text-center">
+      <div class="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-emerald-600"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-2.59a.75.75 0 1 0-1.22-.92l-3.476 4.605-1.64-1.64a.75.75 0 1 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.13-.09l4.076-5.265Z" clip-rule="evenodd" /></svg>
+      </div>
+      <h2 class="text-xl font-semibold mt-4">感謝您的回饋！</h2>
+      <p class="text-gray-700 mt-2">我們已成功收到您的分享 💚 您的心得將在審核後公開。</p>
+      <div class="mt-3 p-3 bg-emerald-50 rounded-lg text-sm">
+        🎁 若通過審核，您將獲得 <b>NT$200</b> 回饋折扣碼，可於現場服務結帳時使用。
+      </div>
+      <div class="mt-6 flex items-center justify-center gap-3">
+        <a href="https://natural-uncle-official.netlify.app/" class="px-4 py-2 rounded border">返回首頁</a>
+        <a href="https://line.me/R/ti/p/@uncle888" target="_blank" class="px-4 py-2 rounded bg-emerald-600 text-white">LINE 聯絡我們</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  const API_REVIEWS = '/.netlify/functions/reviews';
+  const MAX_FILES = 3;
+  const MAX_BYTES = 5 * 1024 * 1024; // 5MB/張
+
+  const form = document.getElementById('form');
+  const submitBtn = document.getElementById('submitBtn');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const preview = document.getElementById('preview');
+
+  let files = [];
+
+  // 基本反垃圾：防連點 + 簡單速率限制
+  function canSubmit(){
+    const last = parseInt(localStorage.getItem('last_submit_ts')||'0',10);
+    return Date.now() - last > 10_000; // 10 秒
+  }
+  function markSubmit(){ localStorage.setItem('last_submit_ts', String(Date.now())); }
+
+  // Dropzone 互動
+  dropzone.addEventListener('click', ()=> fileInput.click());
+  dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e=>{
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', e=> handleFiles(e.target.files));
+
+  function handleFiles(list){
+    const arr = Array.from(list||[]);
+    for (const f of arr){
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > MAX_BYTES){ alert('有圖片超過 5MB 上限'); continue; }
+      if (files.length >= MAX_FILES){ alert('最多上傳 3 張圖片'); break; }
+      files.push(f);
+    }
+    renderPreview();
+  }
+
+  function renderPreview(){
+    preview.innerHTML = '';
+    files.forEach((f, idx)=>{
+      const url = URL.createObjectURL(f);
+      const wrap = document.createElement('div');
+      wrap.className = 'relative';
+      const img = document.createElement('img');
+      img.src = url; img.alt = 'upload';
+      img.className = 'w-full aspect-[4/3] object-cover rounded-lg border';
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'absolute top-2 right-2 bg-white/90 hover:bg-white border rounded-full w-8 h-8 flex items-center justify-center shadow';
+      rm.innerHTML = '<span class="sr-only">移除</span>×';
+      rm.addEventListener('click', ()=>{ files.splice(idx,1); renderPreview(); });
+      wrap.appendChild(img); wrap.appendChild(rm);
+      preview.appendChild(wrap);
+    });
+  }
+
+  async function toDataURL(file){
+    return new Promise((resolve, reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    })
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    // honeypot
+    if (form.company && form.company.value){ return; }
+
+    if (!canSubmit()){
+      alert('送出太頻繁，請稍候再試');
+      return;
+    }
+
+    const nickname = document.getElementById('nickname').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const content = document.getElementById('content').value.trim();
+    const stars = parseInt(document.getElementById('stars').value, 10) || 5;
+
+    if (!nickname || !content){
+      alert('請填寫暱稱與心得內容');
+      return;
+    }
+
+    submitBtn.disabled = true; submitBtn.textContent = '送出中…';
+
+    try{
+      // 轉 dataURL（1–3 張）
+      const imagesData = [];
+      for (const f of files){ imagesData.push(await toDataURL(f)); }
+
+      const payload = { nickname, content, stars, email: email||null, imagesData };
+      const r = await fetch(API_REVIEWS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await r.json();
+      if (!r.ok){ throw new Error(data?.error || '提交失敗'); }
+
+      // 成功
+      markSubmit();
+      document.getElementById('card').classList.add('hidden');
+      document.getElementById('success').classList.remove('hidden');
+
+    } catch(err){
+      console.error(err);
+      alert(err.message || '發生錯誤，請稍後再試');
+    } finally {
+      submitBtn.disabled = false; submitBtn.textContent = '送出回饋';
+    }
+  });
+  </script>
 </body>
 </html>
