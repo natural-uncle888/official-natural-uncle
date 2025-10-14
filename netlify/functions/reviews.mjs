@@ -18,7 +18,7 @@ if (!ADMIN_EMAIL || !BREVO_API_KEY) {
 
 
 async function sendEmailNotification(review, token) {
-  const contentHTML = review.content.replace(/\n/g, '<br>');
+  const contentHTML = (review.content || '').split('\n').join('<br>');
   const body = {
     sender: { name: "Natural Uncle 投稿通知", email: "no-reply@naturaluncle.tw" },
     to: [{ email: ADMIN_EMAIL }],
@@ -29,8 +29,7 @@ async function sendEmailNotification(review, token) {
         <li><b>暱稱：</b>${review.nickname}</li>
         <li><b>評分：</b>${review.stars} 星</li>
         <li><b>Email：</b>${review.email || '未提供'}</li>
-        <li><b>留言：</b><br>${review.content.replace(/
-/g, '<br>')}</li>
+        <li><b>留言：</b><br>${contentHTML}</li>
         <li><b>投稿 ID：</b>${review.id}</li>
         <li><b>Cloudinary JSON：</b><a href="https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${FOLDER_JSON}/${review.id}.json" target="_blank">點我查看</a></li>
       </ul>
