@@ -40,21 +40,21 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-gray-600">訂單編號</label>
-            <input id="order_id" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：2025-1001" required>
+            <input id="order_id" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：2025-1001">
           </div>
           <div>
             <label class="block text-sm text-gray-600">客戶電話後四碼</label>
-            <input id="phone_last4" class="mt-1 w-full border rounded px-3 py-2" maxlength="4" placeholder="例如：8877" required>
+            <input id="phone_last4" class="mt-1 w-full border rounded px-3 py-2" maxlength="4" placeholder="例如：8877">
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-gray-600">服務項目</label>
-            <input id="service" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：冷氣深度清洗" required>
+            <input id="service" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：冷氣深度清洗">
           </div>
           <div>
             <label class="block text-sm text-gray-600">地區</label>
-            <input id="area" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：台中市・西屯區" required>
+            <input id="area" class="mt-1 w-full border rounded px-3 py-2" placeholder="例如：台中市・西屯區">
           </div>
         </div>
 
@@ -108,15 +108,14 @@ btnUnlock.addEventListener('click', () => {
 });
 adminKeyEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnUnlock.click(); });
 
-frm.addEventListener('submit', async (e) => {
+
+  frm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const order_id = document.getElementById('order_id').value.trim();
   const phone_last4 = document.getElementById('phone_last4').value.trim();
   const service = document.getElementById('service').value.trim();
   const area = document.getElementById('area').value.trim();
-  if (!order_id || !phone_last4 || !service || !area) return alert('請完整填寫資料');
-
-  loading.classList.remove('hidden');
+loading.classList.remove('hidden');
   btnGen.disabled = true;
 
   try {
