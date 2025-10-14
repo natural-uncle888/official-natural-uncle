@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
   <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理</h1>
+    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理（重建版）</h1>
 
     <!-- Action Bar -->
     <div class="flex flex-wrap gap-2 items-center mb-4">
@@ -53,7 +53,12 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">GitHub Token (PAT)</label>
-          <input id="gh-token" type="password" class="w-full border rounded px-2 py-1" placeholder="ghp_... 或 fine-grained" />
+          
+    <div class="relative">
+      <input id="gh-token" type="password" class="w-full border rounded px-2 py-1 pr-10" placeholder="ghp_... 或 fine-grained" />
+      <button type="button" id="toggle-token" class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline">顯示</button>
+    </div>
+    
         </div>
         <div class="md:col-span-5 flex items-center gap-3">
           <label class="inline-flex items-center gap-2 text-sm">
@@ -547,7 +552,26 @@
       }
     });
 
-    // 首次載入渲染
+    
+    // === GitHub Token 記憶與顯示切換 ===
+    const TOKEN_KEY = 'news-admin-gh-token';
+
+    // 顯示/隱藏密碼
+    document.getElementById('toggle-token').addEventListener('click', () => {
+      const input = ghToken;
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      document.getElementById('toggle-token').textContent = isHidden ? '隱藏' : '顯示';
+    });
+
+    // 儲存與載入 Token
+    ghToken.value = localStorage.getItem(TOKEN_KEY) || '';
+    ghToken.addEventListener('input', () => {
+      localStorage.setItem(TOKEN_KEY, ghToken.value.trim());
+    });
+
+
+// 首次載入渲染
     renderItems();
   </script>
 </body>
