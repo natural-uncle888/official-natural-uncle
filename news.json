@@ -11,7 +11,9 @@
     "summaryButtonText": "🎁 領取五週年感謝券",
     "summaryFormat": "html",
     "summary": "<b>五年前，大叔扛著清洗機、背著工具箱，踏上這條「家電清洗」職人之路。</b><br>\n也許不帥、不高調，但我們走得踏實、真誠。<br><br>\n\n<i>創業是一條沒有地圖的路。</i><br>\n一步一腳印，走過的地方真的會留下痕跡。<br><br>\n\n我們沒有華麗的廣告詞，<br>\n只有一句真心承諾：<br>\n<span style=\"color:#dc2626; font-weight:bold;\">「不做十全十美的幻想，但做盡心盡力的職人。」</span><br><br>\n\n🧰 清洗的不只是設備，更是對家的敬重與對信任的回應。<br>\n這五年，謝謝你一路相伴。\n",
-    "bullets": [],
+    "bullets": [
+      "<b>五年來，謝謝每一位選擇、信任與推薦我們的客戶</b>\n我們相信：<span style='color:#2563eb'>技術可以精進，服務態度必須更謙卑</span>\n清洗的不只是設備，更是對家的尊重與對信任的回應\n我們或許不是最完美，但會用行動證明我們始終<span style='font-weight:bold'>盡心盡力</span>\n🎁 <span style='color:#dc2626;font-weight:bold'>五週年限定優惠｜滿 $5,000 現折 $300</span>（不限新舊客戶，僅此一次）"
+    ],
     "cta": {
       "text": "立即領取優惠",
       "href": "https://lin.ee/uWxrnKM"
