@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>服務與價格細項</title>
+<meta content="冷氣、直立式洗衣機、水塔、自來水管清洗的完整價格、加價條件、服務內容與保固說明。" name="description"/>
+<link href="https://yourdomain.com/pricing.html" rel="canonical"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Open Graph -->
+<meta content="服務與價格細項｜自然大叔" property="og:title"/>
+<meta content="完整價格、加價條件與服務內容，含保固與發票資訊。" property="og:description"/>
+<meta content="og.jpg" property="og:image"/>
+<meta content="website" property="og:type"/>
+<meta content="https://yourdomain.com/pricing.html" property="og:url"/>
+<!-- 新增 favicon -->
+<link href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png" rel="icon" type="image/png"/>
+<style>
+    /* 基本主題變數（預設跟隨系統） */
+    :root{
+      --bg:#fff; --text:#0f172a; --muted:#475569;
+      --card:#fff; --border:#e2e8f0;
+      --primary:#06C755; --primary-hover:#04b34c; --accent:#3b7d2b;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b1220; --text:#e5e7eb; --muted:#94a3b8;
+        --card:#0f172a; --border:#1f2937; --accent:#fbbf24;
+      }
+    }
+    /* 明確的 dark/light 類別，與首頁同步（localStorage: theme-pref） */
+    body.dark{
+      --bg:#0b1220; --text:#e5e7eb; --muted:#94a3b8;
+      --card:#0f172a; --border:#1f2937; --accent:#fbbf24;
+    }
+    body.light{
+      --bg:#fff; --text:#0f172a; --muted:#475569;
+      --card:#fff; --border:#e2e8f0; --accent:#3b7d2b;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text)}
+    .muted{color:var(--muted)}
+    header,footer{background:var(--card)}
+    body.dark header{background:rgba(15,23,42,.92);border-color:#334155}
+    body.dark footer{background:#0f172a;border-color:#334155}
+
+    /* 元件 */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1.25rem}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1.1rem;border-radius:.75rem;font-weight:700;transition:transform .15s ease,background-color .2s ease,box-shadow .2s ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+    .btn-outline{border:1px solid var(--border);color:var(--text);background:var(--card)}
+    .toc a{padding:.5rem .75rem;border:1px solid var(--border);border-radius:.6rem;transition:background-color .2s ease}
+    .toc a:hover{background:var(--primary);color:#fff}
+    .price th{font-weight:800}
+    table{width:100%;border-collapse:collapse;text-align:left}
+    thead th{border-bottom:1px solid var(--border);padding:.75rem .5rem}
+    tbody td{border-bottom:1px solid var(--border);padding:.7rem .5rem}
+    body.dark thead th, body.dark tbody td{border-color:#334155}
+
+    /* 浮動按鈕（返回頂部 + LINE 預約） */
+    .fab{position:fixed;right:1rem;z-index:60;display:flex;align-items:center;justify-content:center;border-radius:9999px;
+         box-shadow:0 8px 24px rgba(0,0,0,.22);cursor:pointer;transition:transform .2s ease,opacity .3s ease,box-shadow .2s ease}
+    .fab:hover{transform:translateY(-1px) scale(1.05);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+    .fab.is-hidden{opacity:0;pointer-events:none}
+    .fab-top{bottom:calc(5rem + env(safe-area-inset-bottom,0px));width:48px;height:48px;background:#0ea5e9;color:#fff;font-size:1.25rem}
+    .fab-book{bottom:calc(1rem + env(safe-area-inset-bottom,0px));min-width:48px;height:48px;padding:0 1.1rem;background:var(--primary);color:#fff;font-weight:800}
+    @media (max-width:767.98px){ .fab-top{bottom:calc(5.5rem + env(safe-area-inset-bottom,0px))} }
+
+    /* Header 導覽美化（置中膠囊選單） */
+    .nav-shell{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.7);
+      border-radius:9999px;
+      padding:.25rem;
+      backdrop-filter:saturate(140%) blur(8px);
+    }
+    body.dark .nav-shell{
+      background:rgba(15,23,42,.6);
+      border-color:#334155;
+    }
+    .nav-pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.5rem 1rem;border-radius:9999px;
+      font-weight:800;font-size:.9rem;
+      transition:background-color .2s ease, transform .15s ease, color .2s ease;
+      white-space:nowrap;
+    }
+    .nav-pill:hover{transform:translateY(-1px)}
+    .nav-pill:is(:hover,:focus-visible){background:rgba(148,163,184,.25)}
+    body.dark .nav-pill:is(:hover,:focus-visible){background:rgba(148,163,184,.15)}
+    .nav-active{background:var(--primary);color:#fff}
+    .nav-active:hover{background:var(--primary-hover)}
+
+    /* 手機：隱藏水平捲軸樣式 */
+    .no-scrollbar::-webkit-scrollbar{display:none}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+
+    /* 🔧 深色模式可讀性修正：CTA 標題在淺底上改用深色 */
+    body.dark .cta-heading{ color:#0b1220 !important; }
+
+    /* =========================
+       ↓ 覆蓋式「色彩與對比升級」（與首頁一致） ↓
+       ========================= */
+
+    /* Light 基底更有層次，字色更深 */
+    :root{
+      --bg:#f3f5f9;               /* 畫布：冷淺灰 */
+      --text:#0b1220;             /* 主要文字：深藍黑 */
+      --muted:#5b6b7f;            /* 次文字：中灰藍 */
+
+      --card:#ffffff;
+      --border:#d7deea;           /* 分隔更清楚 */
+
+      --primary:#06C755;
+      --primary-hover:#05b451;
+
+      /* 輔助強調色（藍）統一作為主 CTA 與裝飾 */
+      --accent:#2563eb;
+    }
+
+    /* Dark 對比與可讀性加強 */
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b1220;
+        --text:#e7edf6;           /* 對比高、偏藍白 */
+        --muted:#afbbce;          /* 次文字提升可讀 */
+        --card:#0f172a;
+        --border:#233046;
+        --accent:#60a5fa;         /* 深色下 CTA 偏亮藍 */
+      }
+    }
+    body.dark{
+      --bg:#0b1220;
+      --text:#e7edf6;
+      --muted:#afbbce;
+      --card:#0f172a;
+      --border:#233046;
+      --accent:#60a5fa;
+    }
+    body.light{
+      --bg:#f3f5f9;
+      --text:#0b1220;
+      --muted:#5b6b7f;
+      --card:#ffffff;
+      --border:#d7deea;
+      --accent:#2563eb;
+    }
+
+    /* 畫布背景：雙輻射暈 + 漸層（提升層次感） */
+    body{
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(37,99,235,.12), transparent 60%),
+        radial-gradient(1000px 500px at 90% -20%, rgba(6,199,85,.12), transparent 55%),
+        linear-gradient(#f6f8fc, #eef2f8);
+      color:var(--text);
+    }
+    body.dark{
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(96,165,250,.20), transparent 60%),
+        radial-gradient(1000px 500px at 90% -20%, rgba(6,199,85,.18), transparent 55%),
+        linear-gradient(#0f172a, #0b1220);
+    }
+
+    /* 卡片層次與陰影（深色也清楚） */
+    .card{
+      border:1px solid var(--border);
+      box-shadow:0 6px 20px rgba(15,23,42,.06);
+    }
+    body.dark .card{ box-shadow:0 8px 24px rgba(0,0,0,.35) }
+
+    /* CTA：統一以 accent 藍為主行為色（與首頁一致） */
+    .btn-primary{ background:var(--accent); color:#fff }
+    .btn-primary:hover{ background:#1d4ed8 }
+
+    /* 目錄膠囊 hover 改為 accent 藍 */
+    .toc a:hover{ background:var(--accent); color:#fff; border-color:transparent }
+
+    /* 表格：表頭加入細緻漸層、列條紋 */
+    thead th{
+      background:linear-gradient(180deg, rgba(37,99,235,.08), rgba(37,99,235,0));
+      color:var(--text);
+      font-weight:800;
+    }
+    tbody tr:nth-child(2n){ background:rgba(2,6,23,.03) }
+    body.dark tbody tr:nth-child(2n){ background:rgba(255,255,255,.03) }
+
+    /* Header/ Footer 透明玻璃感 + 邊界強化 */
+    header{
+      background:rgba(255,255,255,.88);
+      backdrop-filter:saturate(1.1) blur(8px);
+      border-bottom:1px solid var(--border);
+      box-shadow:0 2px 12px rgba(2,6,23,.04);
+    }
+    body.dark header{ background:rgba(15,23,42,.88) }
+    footer{
+      background:transparent;
+      border-top:1px solid var(--border);
+    }
+
+    /* 膠囊導覽：使用主品牌綠作為目前頁籤，hover 仍保留柔和底 */
+    .nav-active{ background:var(--primary); color:#fff }
+    .nav-active:hover{ background:var(--primary-hover) }
+
+    /* 浮動元件與快速預約色彩同步 */
+    .fab-top{ background:var(--accent); color:#fff }
+    .fab-book{ background:var(--primary); color:#fff }
+  </style>
+<style>
+.accordion-toggle { font-weight: 600; }
+.accordion-panel { background: #fff; }
+</style><style>
+@media (prefers-color-scheme: dark) {
+  .featured-section {
+    background-color: #121212 !important;
+    color: #f5f5f5 !important;
+  }
+  .featured-section h2,
+  .featured-section p,
+  .featured-section span {
+    color: #ffffff !important;
+  }
+}
+</style></head>
+<body data-theme="" id="top">
+<!-- Header（行動裝置兩行設計；桌機置中） -->
+<header class="sticky top-0 z-50 backdrop-blur border-b">
+<div class="max-w-6xl mx-auto px-4 py-3">
+<!-- 第一行：品牌（左右留白，避免擠壓） -->
+<div class="flex items-center justify-between">
+<a aria-label="返回首頁" class="flex items-center gap-2" href="index.html">
+<img alt="自然大叔" class="h-8 w-8 rounded-md" src="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png"/>
+<span class="font-extrabold tracking-tight">自然大叔</span>
+</a>
+<span aria-hidden="true" class="w-8 h-8"></span>
+</div>
+<!-- 第二行：手機導覽（全寬置中，可水平滑動） -->
+<nav class="mt-2 md:hidden">
+<div class="nav-shell no-scrollbar overflow-x-auto flex items-center justify-center gap-1 px-1">
+<a class="nav-pill" href="index.html">首頁</a>
+<a aria-current="page" class="nav-active nav-pill" href="pricing.html">價格細項</a>
+</div>
+</nav>
+<!-- 桌機導覽（維持置中膠囊） -->
+<nav class="hidden md:flex items-center justify-center mt-2">
+<div class="nav-shell flex items-center justify-center gap-1 px-1">
+<a class="nav-pill" href="index.html">首頁</a>
+<a aria-current="page" class="nav-active nav-pill" href="pricing.html">價格細項</a>
+</div>
+</nav>
+</div>
+</header>
+<!-- 麵包屑 -->
+<nav aria-label="breadcrumb" class="max-w-6xl mx-auto px-4 py-4 text-sm">
+<ol class="flex items-center gap-2 text-slate-500">
+<li><a class="underline" href="index.html">首頁</a></li>
+<li aria-hidden="true">/</li>
+<li class="text-slate-700">服務與價格細項</li>
+</ol>
+</nav>
+<!-- 頁首說明 -->
+<section class="max-w-6xl mx-auto px-4 pb-4">
+<h1 class="text-3xl md:text-4xl font-extrabold">服務與價格細項</h1>
+<p class="mt-2 text-slate-600">以下為各服務的基本價格、加價條件與作業內容。若有型號/位置特殊，請
+      <a class="underline text-sky-700" href="https://line.me/R/ti/p/@uncle888">LINE 傳照片</a>快速估價。</p>
+</section>
+<!-- 目錄 -->
+<section class="max-w-6xl mx-auto px-4 py-4">
+<div class="toc grid grid-cols-2 md:grid-cols-4 gap-3">
+<a class="text-center" href="#ac">冷氣清洗</a>
+<a class="text-center" href="#wm">直立式洗衣機</a>
+<a class="text-center" href="#tank">水塔清洗</a>
+<a class="text-center" href="#pipe">自來水管清洗</a>
+</div>
+</section>
+<!-- 冷氣清洗 -->
+<section class="max-w-6xl mx-auto px-4 py-8" id="ac">
+<div class="p-6 card accordion-root relative">
+<div class="flex items-start justify-between gap-4">
+<div>
+<h2 class="text-2xl font-extrabold">冷氣清洗</h2>
+<p class="mt-1 muted">分離式/吊隱式，現場掛洗。含防護與環保清潔劑。</p>
+</div><div class="flex justify-end mt-4"></div><div class="mt-6"></div>
+</div>
+<div class="overflow-x-auto mt-5">
+<table class="price w-full text-left text-sm">
+<thead>
+<tr class="border-b"><th class="py-3">機型/條件</th><th>基本價格</th><th>加價情形</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr class="border-b"><td class="py-3">分離式（標準尺寸）/台</td><td>NT$ 1,500 起<div class="mt-1 text-xs text-emerald-700 inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5">三台以上／每台 NT$ 1,500</div></td><td>加大加長款、特殊機款</td><td>含防護、清潔劑、前後照</td></tr>
+<tr class="border-b"><td class="py-3">吊隱式冷氣 /台</td><td>NT$ 2,800 起</td><td>特殊機款</td><td>不拆保溫風管</td></tr>
+<tr><td class="py-3">室外機</td><td>NT$ 300 起</td><td>高樓外牆需另估</td><td>安全優先</td></tr>
+</tbody>
+</table>
+</div>
+<p class="mt-2 text-sm text-slate-600">＊同址同日三台以上，分離式每台 NT$ 1,500；其餘條件依現場與機型評估。</p>
+<details class="mt-4">
+<summary class="font-semibold cursor-pointer">加價與不承作情形</summary>
+<ul class="list-disc pl-6 mt-2 text-sm text-slate-600">
+<li>高空/需吊掛作業（另估）。</li>
+<li>冷媒不足、安裝不良屬冷凍空調範疇，建議先處理後再清洗。</li>
+<li>其他不可控之因素。</li>
+</ul>
+</details>
+<div class="text-right mt-4"></div><div class="text-right mt-4"><button class="accordion-toggle bg-sky-600 text-white px-4 py-2 rounded" type="button">查看加價說明</button></div><div class="accordion-panel shadow hidden rounded-lg p-4 bg-gray-50 w-full mt-2"><ul class="list-disc pl-6 text-sm text-gray-700 space-y-1"><li>室內機長度大於 182 cm：加收 $300 元／台</li><li>變形金剛系列：加收 $500 元／台</li><li>國際牌 CU/CS-PX.GX.QX.LX 等系列</li><li>三菱變形金剛變形系列</li><li>富士通 一體式水盤 機型：加收 $500 元／台</li></ul></div></div>
+</section>
+<!-- 直立式洗衣機 -->
+<section class="max-w-6xl mx-auto px-4 py-8" id="wm">
+<div class="card p-6">
+<div class="flex items-start justify-between gap-4">
+<div>
+<h2 class="text-2xl font-extrabold">直立式洗衣機清洗</h2>
+<p class="mt-1 muted">全機拆洗除黴水垢，還原洗淨力。</p>
+</div>
+</div>
+<div class="overflow-x-auto mt-5">
+<table class="price w-full text-left text-sm">
+<thead>
+<tr class="border-b"><th class="py-3">容量/條件</th><th>基本價格</th><th>加價情形</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr class="border-b"><td class="py-3">一般家用</td><td>NT$ 2,000 起</td><td>生鏽螺帽更換時</td><td>含拆桶、除黴</td></tr>
+</tbody>
+</table>
+</div>
+<details class="mt-4">
+<summary class="font-semibold cursor-pointer">注意與限制</summary>
+<ul class="list-disc pl-6 mt-2 text-sm text-slate-600">
+<li>滾筒式不在此服務。</li>
+<li>機齡過高塑料脆化，拆裝風險會先說明。</li>
+</ul>
+</details>
+</div>
+</section>
+<!-- 水塔清洗 -->
+<section class="max-w-6xl mx-auto px-4 py-8" id="tank">
+<div class="card p-6">
+<div class="flex items-start justify-between gap-4">
+<div>
+<h2 class="text-2xl font-extrabold">水塔清洗</h2>
+<p class="mt-1 muted">排空、刷洗，附清洗照片存證。</p>
+</div>
+</div>
+<div class="overflow-x-auto mt-5">
+<table class="price w-full text-left text-sm">
+<thead>
+<tr class="border-b"><th class="py-3">容量/材質</th><th>基本價格</th><th>加價情形</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr class="border-b"><td class="py-3">家用 ≤2噸</td><td>NT$ 1,000 起</td><td>放置高危險/狹窄機房</td><td>需可用水源/排水</td></tr>
+<tr><td class="py-3">家用 2–3 噸</td><td>NT$ 1,500 起</td><td>放置高危險/狹窄機房</td><td>需可用水源/排水</td></tr>
+</tbody>
+</table>
+</div>
+<details class="mt-4">
+<summary class="font-semibold cursor-pointer">注意與限制</summary>
+<ul class="list-disc pl-6 mt-2 text-sm text-slate-600">
+<li>如需社區停水公告，請屋主/管委會提前申請。</li>
+<li>清洗期間建議事先儲水，避免無水可用。</li>
+</ul>
+</details>
+</div>
+</section>
+<!-- 自來水管清洗 -->
+<section class="max-w-6xl mx-auto px-4 py-8" id="pipe">
+<div class="card p-6">
+<div class="flex items-start justify-between gap-4">
+<div>
+<h2 class="text-2xl font-extrabold">自來水管清洗</h2>
+<p class="mt-1 muted">脈衝清洗去除鏽垢，改善黃水/水壓不穩。</p>
+</div>
+</div>
+<div class="overflow-x-auto mt-5">
+<table class="price w-full text-left text-sm">
+<thead>
+<tr class="border-b"><th class="py-3">住家型態</th><th>基本價格</th><th>加價情形</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr class="border-b"><td class="py-3">套房/小坪數（單迴路）</td><td>NT$ 3,200 起</td><td>多重管線</td><td>含基本檢測、現場評估</td></tr>
+<tr><td class="py-3">家庭（2 衛以上）</td><td>NT$ 4,500 起</td><td>多重管線</td><td>含基本檢測、現場評估</td></tr>
+</tbody>
+</table>
+</div>
+<details class="mt-4">
+<summary class="font-semibold cursor-pointer">注意與限制</summary>
+<ul class="list-disc pl-6 mt-2 text-sm text-slate-600">
+<li>施工期間需可接入設備，請預留廚房/浴室作業空間。</li>
+<li>若有熱水器/軟水機/淨水器，將暫時關閉進出水與電源。</li>
+</ul>
+</details>
+</div>
+</section>
+<!-- 通用說明/保固/發票 -->
+<section class="max-w-6xl mx-auto px-4 py-8">
+<div class="grid md:grid-cols-3 gap-6">
+<div class="card p-6">
+<h3 class="text-xl font-bold">售後保固</h3>
+<p class="mt-2 text-sm text-slate-600">
+          清洗完成起 14 天。漏水、使用異常等清洗關聯問題，專人到府處理至正常。<br/>
+          原本安裝不良、機件老舊/破裂/鏽蝕/耗損等非清洗因素不在範圍。
+        </p>
+</div>
+<div class="card p-6">
+<h3 class="text-xl font-bold">收費與發票</h3>
+<p class="mt-2 text-sm text-slate-600">
+          現金/轉帳皆可，<strong>可開立發票(需另加5％營業稅)</strong><br/>
+          若需停車費或管制證，請事先告知。
+        </p>
+</div>
+<div class="card p-6">
+<h3 class="text-xl font-bold">到府前準備</h3>
+<ul class="mt-2 list-disc pl-6 text-sm text-slate-600">
+<li>確保施工用電與水源可用；必要時預留電梯。</li>
+<li>冷氣施工請清出室內機下方 1–1.5m 空間以便 A 字梯。</li>
+<li>狹窄陽台/浴室可先拍照提供，加快評估。</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- CTA（深色模式標題可讀性已修正） -->
+<section class="bg-slate-50 border-t">
+<div class="max-w-6xl mx-auto px-4 py-10 text-center">
+<h2 class="cta-heading text-2xl md:text-3xl font-extrabold">已看過價格了嗎？</h2>
+<p class="mt-2 muted">可先 LINE 洽詢傳照片更精準，或查看項目價格表。</p>
+<div class="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+<a class="btn btn-primary" href="https://line.me/R/ti/p/@uncle888">LINE 快速估價</a>
+<a aria-label="家電清洗服務價目表" class="btn btn-outline" href="https://natural-uncle888.github.io/pricelist/">項目＆價格</a>
+</div>
+</div>
+</section>
+<footer class="border-t">
+<div class="max-w-6xl mx-auto px-4 py-8 text-sm text-slate-500">© <span id="year"></span> 自然大叔 Natural Uncle｜統編：88537528</div>
+</footer>
+<!-- 浮動按鈕：返回頂部 + LINE 預約 -->
+<a aria-label="返回頂部" class="fab fab-top is-hidden" href="#top" id="backTop" title="返回頂部">↑</a>
+<a aria-label="LINE 預約" class="fab fab-book" href="https://line.me/R/ti/p/@uncle888" title="LINE 預約">LINE 預約</a>
+<script>
+    // 年份
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // 與首頁同步深/淺色（localStorage: 'theme-pref'）
+    (function(){
+      const KEY='theme-pref';
+      const root=document.body;
+
+      function apply(val){
+        if(val==='dark' || val==='light'){
+          root.classList.toggle('dark', val==='dark');
+          root.classList.toggle('light', val==='light');
+        }else{
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          root.classList.toggle('dark', prefersDark);
+          root.classList.toggle('light', !prefersDark);
+        }
+      }
+
+      // 初次載入
+      apply(localStorage.getItem(KEY));
+
+      // 跨分頁即時同步
+      window.addEventListener('storage', (e)=>{
+        if(e.key===KEY) apply(e.newValue);
+      });
+
+      // 系統主題改變時（只有在沒有手動偏好時才跟）
+      const mq=window.matchMedia('(prefers-color-scheme: dark)');
+      if(mq.addEventListener){
+        mq.addEventListener('change', (e)=>{
+          if(localStorage.getItem(KEY)) return;
+          apply(e.matches ? 'dark' : 'light');
+        });
+      }
+    })();
+
+    // 返回頂部顯示控制
+    (function(){
+      const backTop = document.getElementById('backTop');
+      const THRESHOLD = 360;
+      function onScroll(){
+        if (window.scrollY > THRESHOLD) backTop.classList.remove('is-hidden');
+        else backTop.classList.add('is-hidden');
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+<script>
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.accordion-toggle');
+  if(!btn) return;
+  const root = btn.closest('.accordion-root') || document;
+  const panel = root.querySelector('.accordion-panel');
+  if(!panel) return;
+  panel.classList.toggle('hidden');
+});
+</script></body>
+</html>
