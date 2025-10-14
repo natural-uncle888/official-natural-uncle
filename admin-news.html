@@ -352,7 +352,7 @@
       const safeSummary = isHtml ? sanitizeSummaryHTML(rawSummary) : (rawSummary || '');
 
       const bullets = (Array.isArray(item.bullets) && item.bullets.length)
-        ? `<ul class="list-disc pl-4 space-y-1">${item.bullets.map(x=>`<li>${x}</li>`).join('')}</ul>`
+        ? `<ul class="list-disc pl-4 space-y-1">${item.bullets.map(x => `<li>${sanitizeSummaryHTML(x)}</li>`).join('')}</ul>`
         : '';
 
       const cta = (item.cta && item.cta.href)
@@ -555,16 +555,12 @@
     
     // === GitHub Token 記憶與顯示切換 ===
     const TOKEN_KEY = 'news-admin-gh-token';
-
-    // 顯示/隱藏密碼
     document.getElementById('toggle-token').addEventListener('click', () => {
       const input = ghToken;
       const isHidden = input.type === 'password';
       input.type = isHidden ? 'text' : 'password';
       document.getElementById('toggle-token').textContent = isHidden ? '隱藏' : '顯示';
     });
-
-    // 儲存與載入 Token
     ghToken.value = localStorage.getItem(TOKEN_KEY) || '';
     ghToken.addEventListener('input', () => {
       localStorage.setItem(TOKEN_KEY, ghToken.value.trim());
