@@ -18,6 +18,7 @@ if (!ADMIN_EMAIL || !BREVO_API_KEY) {
 
 
 async function sendEmailNotification(review, token) {
+  const contentHTML = review.content.replace(/\n/g, '<br>');
   const body = {
     sender: { name: "Natural Uncle 投稿通知", email: "no-reply@naturaluncle.tw" },
     to: [{ email: ADMIN_EMAIL }],
