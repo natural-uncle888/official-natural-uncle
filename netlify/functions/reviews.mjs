@@ -8,6 +8,42 @@ const ADMIN_KEY = process.env.ADMIN_KEY || '';
 
 const FOLDER_JSON = 'reviews-json';
 const FOLDER_IMAGES = 'reviews-images';
+const ADMIN_EMAIL = "natural.uncle@gmail.com";
+const BREVO_API_KEY = "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";
+
+async function sendEmailNotification(review, token) {
+  const body = {
+    sender: { name: "Natural Uncle 投稿通知", email: "no-reply@naturaluncle.tw" },
+    to: [{ email: ADMIN_EMAIL }],
+    subject: "📬 收到新的投稿回饋",
+    htmlContent: `
+      <p>✉️ 收到一則新的投稿回饋：</p>
+      <ul>
+        <li><b>暱稱：</b>${review.nickname}</li>
+        <li><b>評分：</b>${review.stars} 星</li>
+        <li><b>Email：</b>${review.email || '未提供'}</li>
+        <li><b>留言：</b><br>${review.content.replace(/
+/g, '<br>')}</li>
+        <li><b>投稿 ID：</b>${review.id}</li>
+        <li><b>Cloudinary JSON：</b><a href="https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${FOLDER_JSON}/${review.id}.json" target="_blank">點我查看</a></li>
+      </ul>
+    `
+  };
+
+  const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": BREVO_API_KEY
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!resp.ok) {
+    const errorText = await resp.text();
+    console.warn("寄送投稿通知失敗：", errorText);
+  }
+}
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGES = 3;
@@ -105,7 +141,8 @@ async function updateReviewJSON(public_id, mutator) {
   const secure = resources[0].secure_url;
   const cur = await fetchJSON(secure);
   const next = mutator(cur);
-  await cloudinaryUploadJSON({ folder: FOLDER_JSON, public_id, jsonObj: next, overwrite: true });
+  await cloudinaryUploadJSON({
+      await sendEmailNotification(review); folder: FOLDER_JSON, public_id, jsonObj: next, overwrite: true });
   return next;
 }
 
@@ -211,6 +248,7 @@ export default async (req) => {
       };
 
       await cloudinaryUploadJSON({
+      await sendEmailNotification(review);
         folder: FOLDER_JSON,
         public_id: id,
         jsonObj: review,
