@@ -8,8 +8,14 @@ const ADMIN_KEY = process.env.ADMIN_KEY || '';
 
 const FOLDER_JSON = 'reviews-json';
 const FOLDER_IMAGES = 'reviews-images';
-const ADMIN_EMAIL = "natural.uncle@gmail.com";
-const BREVO_API_KEY = "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";
+const ADMIN_EMAIL = process.env.BREVO_SENDER_EMAIL;
+const BREVO_API_KEY = process.env.BREVO_KEY;
+
+
+if (!ADMIN_EMAIL || !BREVO_API_KEY) {
+  throw new Error('Missing BREVO_SENDER_EMAIL or BREVO_KEY in environment config');
+}
+
 
 async function sendEmailNotification(review, token) {
   const body = {
