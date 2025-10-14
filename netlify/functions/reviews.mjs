@@ -1,92 +1,94 @@
-import { writeFileSync } from 'fs';
-import { tmpdir } from 'os';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import fetch from 'node-fetch';
-import cloudinary from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+import { streamToBuffer } from 'node:stream/consumers';
 
-const FOLDER_JSON = 'natural_uncle_json';
+const BREVO_KEY = process.env.BREVO_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
-cloudinary.v2.config({
+cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const sendEmailNotification = async (review) => {
-  const contentHTML = `
-    <p><b>有新投稿：</b></p>
-    <ul>
-      <li><b>訂單編號：</b>${review.orderId || '(未填)'}</li>
-      <li><b>電話後四碼：</b>${review.phone || '(未填)'}</li>
-      <li><b>地區：</b>${review.region || '(未填)'}</li>
-      <li><b>服務項目：</b>${review.service || '(未填)'}</li>
-      <li><b>留言：</b><br>${(review.content || '').split('\n').join('<br>')}</li>
-    </ul>
-  `;
+async function uploadJSONToCloudinary(data, token) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        public_id: `reviews/${token}`,
+        format: 'json',
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
 
-  const payload = {
-    sender: { name: process.env.BREVO_SENDER_NAME || "投稿系統", email: process.env.BREVO_SENDER_EMAIL },
-    to: [{ email: process.env.ADMIN_EMAIL }],
-    subject: "📝 收到新投稿通知",
-    htmlContent: contentHTML,
-  };
+    const buffer = Buffer.from(JSON.stringify(data));
+    stream.end(buffer);
+  });
+}
 
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+async function sendEmailNotification(data) {
+  const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "api-key": process.env.BREVO_KEY,
+      "api-key": BREVO_KEY,
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      sender: { name: "投稿通知", email: BREVO_SENDER_EMAIL },
+      to: [{ email: ADMIN_EMAIL }],
+      subject: "收到一則新投稿",
+      htmlContent: `
+        <p><strong>訂單編號：</strong>${data.orderNumber || "(未填)"}</p>
+        <p><strong>服務項目：</strong>${data.service || "(未填)"}</p>
+        <p><strong>地區：</strong>${data.area || "(未填)"}</p>
+        <p><strong>客戶電話後四碼：</strong>${data.phone || "(未填)"}</p>
+        <p><a href="${data.link}" target="_blank">點我查看投稿表單</a></p>
+      `
+    })
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error("Send email failed:", errText);
-    throw new Error("寄送 Email 通知失敗");
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error("❌ 寄信失敗", resp.status, errText);
+    throw new Error("寄信失敗");
   }
-};
+}
 
-export default async (req, context) => {
+export default async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
   try {
-    const review = await req.json();
-    const token = uuidv4();
+    const data = await req.json();
+    console.log("📥 收到投稿資料", data);
 
-    // 儲存為 temp json file
-    const tempPath = path.join(tmpdir(), `${token}.json`);
-    writeFileSync(tempPath, JSON.stringify(review, null, 2));
+    const token = uuidv4().slice(0, 8);
+    data.token = token;
+    data.link = \`\${req.url.replace(/\/\.netlify.*/, "")}upload.html?r=\${token}\`;
 
-    // 寄送 email
-    await sendEmailNotification(review);
+    console.log("☁️ 上傳 JSON 至 Cloudinary...");
+    const result = await uploadJSONToCloudinary(data, token);
+    console.log("✅ Cloudinary 上傳成功", result.secure_url);
 
-    // 上傳 JSON 到 Cloudinary
-    const buffer = Buffer.from(JSON.stringify(review));
-    await new Promise((resolve, reject) => {
-      cloudinary.v2.uploader.upload_stream({
-        folder: FOLDER_JSON,
-        public_id: token,
-        resource_type: 'raw',
-        format: 'json'
-      }, (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      }).end(buffer);
-    });
+    console.log("📧 準備寄送 Email 給管理員...");
+    await sendEmailNotification(data);
+    console.log("✅ Email 寄送成功");
 
     return new Response(JSON.stringify({ success: true, token }), {
       status: 200,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("處理投稿失敗:", err);
-    return new Response(JSON.stringify({ error: "投稿儲存或通知失敗" }), {
+    console.error("🔥 發生錯誤：", err);
+    return new Response(JSON.stringify({ error: "提交失敗", details: err.message }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
