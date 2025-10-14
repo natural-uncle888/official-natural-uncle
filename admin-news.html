@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
   <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理（重建版）</h1>
+    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理</h1>
 
     <!-- Action Bar -->
     <div class="flex flex-wrap gap-2 items-center mb-4">
@@ -49,7 +49,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Path</label>
-          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="public/news.json" value="public/news.json" />
+          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="/news.json" value="/news.json" />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">GitHub Token (PAT)</label>
@@ -472,7 +472,7 @@
         ghOwner.value = s.owner || '';
         ghRepo.value = s.repo || '';
         ghBranch.value = s.branch || 'main';
-        ghPath.value = s.path || 'public/news.json';
+        ghPath.value = s.path || '/news.json';
         remember.checked = true;
       } catch {}
     })();
@@ -525,7 +525,7 @@
       const owner = ghOwner.value.trim();
       const repo = ghRepo.value.trim();
       const branch = ghBranch.value.trim() || 'main';
-      const path = ghPath.value.trim() || 'public/news.json';
+      const path = ghPath.value.trim() || '/news.json';
       ghStatus.textContent = '檢查中…';
 
       const errs = validateAll(items);
