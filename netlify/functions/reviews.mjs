@@ -148,7 +148,10 @@ async function updateReviewJSON(public_id, mutator) {
   const cur = await fetchJSON(secure);
   const next = mutator(cur);
   await cloudinaryUploadJSON({
-      await sendEmailNotification(review); folder: FOLDER_JSON, public_id, jsonObj: next, overwrite: true });
+      await sendEmailNotification(review);
+
+    await cloudinary.uploader.upload_stream({
+      folder: FOLDER_JSON, public_id, jsonObj: next, overwrite: true });
   return next;
 }
 
@@ -255,7 +258,9 @@ export default async (req) => {
 
       await cloudinaryUploadJSON({
       await sendEmailNotification(review);
-        folder: FOLDER_JSON,
+
+    await cloudinary.uploader.upload_stream({
+      folder: FOLDER_JSON,
         public_id: id,
         jsonObj: review,
         overwrite: false
