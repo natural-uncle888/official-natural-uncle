@@ -1,494 +1,554 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <!-- 新增 favicon -->
-  <link rel="icon" href="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png" type="image/png"/>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>最新消息｜公告管理</title>
+  <!-- Tailwind CDN（開發/內部工具可用；上線請改用編譯版） -->
   <script src="https://cdn.tailwindcss.com"></script>
-<script defer>
-// === injected: loader & downloader ===
-    async function loadFromServer(){
-      try{
-        const url = (window.NEWS_JSON_URL || '/news.json') + (window.NEWS_JSON_URL?.includes('?') ? '&' : '?') + 't=' + Date.now();
-        const res = await fetch(url, {cache:'no-store'});
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const data = await res.json();
-        if(!Array.isArray(data)) throw new Error('資料格式需為陣列');
-        items = data;
-        render();
-        alert('已載入 ' + url + '，共 ' + items.length + ' 筆');
-      }catch(err){
-        alert('載入失敗：' + err.message + '\n\n可能原因：\n1) 路徑錯誤（請確認 news.json 與此頁是否同網域/路徑）\n2) CORS 限制（跨網域需開放 Access-Control-Allow-Origin）\n3) 檔案內容不是 JSON 陣列');
-      }
-    }
-    function downloadJson(){
-      try{
-        const blob = new Blob([JSON.stringify(items, null, 2)], {type:'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'news.json';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(()=>{
-          URL.revokeObjectURL(a.href);
-          a.remove();
-        }, 0);
-      }catch(err){
-        alert('下載失敗：' + err.message);
-      }
-    }
-    
-
-// === injected: GitHub upload ===
-(function(){
-  function toB64(str){
-    const utf8 = new TextEncoder().encode(str);
-    let binary = '';
-    for (let i=0;i<utf8.length;i++) binary += String.fromCharCode(utf8[i]);
-    return btoa(binary);
-  }
-  async function ghFetch(url, opts){
-    const res = await fetch(url, opts);
-    const txt = await res.text();
-    let data = null;
-    try { data = JSON.parse(txt); } catch {}
-    if(!res.ok){
-      const msg = (data && (data.message || data.error)) || txt || res.statusText;
-      throw new Error(`GitHub API ${res.status}: ${msg}`);
-    }
-    return data ?? {};
-  }
-  async function uploadNewsToGitHub(){
-    const status = document.getElementById('ghStatus');
-    const owner  = document.getElementById('ghOwner').value.trim();
-    const repo   = document.getElementById('ghRepo').value.trim();
-    const branch = document.getElementById('ghBranch').value.trim() || 'main';
-    const path   = document.getElementById('ghPath').value.trim() || 'news.json';
-    const token  = document.getElementById('ghToken').value.trim();
-    const message= document.getElementById('ghMessage').value.trim() || 'chore(news): update news.json';
-    if(!owner || !repo || !token){
-      status.textContent = '請填寫 owner / repo / token';
-      status.className = 'text-sm text-red-600';
-      return;
-    }
-    status.textContent = '讀取現有檔案狀態...';
-    status.className = 'text-sm text-slate-600';
-    const base = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
-    const headers = {
-      'Accept': 'application/vnd.github+json',
-      'Authorization': `Bearer ${token}`,
-      'X-GitHub-Api-Version': '2022-11-28'
-    };
-    // get sha if exists
-    let sha;
-    try {
-      const meta = await ghFetch(base + `?ref=${encodeURIComponent(branch)}`, { headers });
-      sha = meta.sha;
-    } catch(e){
-      if(!/404/.test(String(e))) {
-        status.textContent = e.message;
-        status.className = 'text-sm text-red-600';
-        return;
-      }
-    }
-    // prepare content
-    let jsonStr = '';
-    try{
-      jsonStr = JSON.stringify(items, null, 2);
-    }catch(e){
-      status.textContent = '無法序列化 items：' + e.message;
-      status.className = 'text-sm text-red-600';
-      return;
-    }
-    // upload
-    status.textContent = '上傳中...';
-    try {
-      const body = { message, content: toB64(jsonStr), branch };
-      if(sha) body.sha = sha;
-      const result = await ghFetch(base, { method: 'PUT', headers, body: JSON.stringify(body) });
-      status.innerHTML = `✅ 已提交：<a class="underline" target="_blank" href="${result.commit?.html_url || '#'}">查看 commit</a>`;
-      status.className = 'text-sm text-emerald-600';
-    } catch(e){
-      status.textContent = '上傳失敗：' + e.message;
-      status.className = 'text-sm text-red-600';
-    }
-  }
-  const btn = document.getElementById('btnGhUpload');
-  if(btn) btn.addEventListener('click', (e)=>{ e.preventDefault(); uploadNewsToGitHub(); });
-})();
-
-
-// === injected: GitHub prefs persistence (localStorage, excludes token) ===
-(function(){
-  const KEY = 'newsGhPrefs.v1';
-  function loadPrefs(){
-    try{ return JSON.parse(localStorage.getItem(KEY) || 'null') || null; }catch{return null;}
-  }
-  function savePrefs(obj){
-    try{ localStorage.setItem(KEY, JSON.stringify(obj)); }catch{ /* quota or disabled */ }
-  }
-  function clearPrefs(){
-    try{ localStorage.removeItem(KEY); }catch{}
-  }
-  function readUI(){
-    return {
-      owner:  document.getElementById('ghOwner')?.value?.trim() || '',
-      repo:   document.getElementById('ghRepo')?.value?.trim() || '',
-      branch: document.getElementById('ghBranch')?.value?.trim() || 'main',
-      path:   document.getElementById('ghPath')?.value?.trim() || 'news.json',
-      message:document.getElementById('ghMessage')?.value?.trim() || ''
-    };
-  }
-  function writeUI(p){
-    if(!p) return;
-    if(p.owner && document.getElementById('ghOwner'))  document.getElementById('ghOwner').value = p.owner;
-    if(p.repo && document.getElementById('ghRepo'))    document.getElementById('ghRepo').value = p.repo;
-    if(p.branch && document.getElementById('ghBranch'))document.getElementById('ghBranch').value = p.branch;
-    if(p.path && document.getElementById('ghPath'))    document.getElementById('ghPath').value = p.path;
-    if(p.message && document.getElementById('ghMessage'))document.getElementById('ghMessage').value = p.message;
-  }
-
-  function maybeAutoSave(){
-    const remember = document.getElementById('ghRemember');
-    if(remember && remember.checked){
-      const prefs = readUI();
-      savePrefs({ ...prefs, _ts: Date.now() });
-    }
-  }
-
-  // On load, populate fields
-  window.addEventListener('DOMContentLoaded', ()=>{
-    const remember = document.getElementById('ghRemember');
-    const clearBtn = document.getElementById('btnGhClear');
-    const inputs = ['ghOwner','ghRepo','ghBranch','ghPath','ghMessage'].map(id=>document.getElementById(id)).filter(Boolean);
-    const prefs = loadPrefs();
-    if(prefs){
-      writeUI(prefs);
-      if(remember) remember.checked = true;
-    }
-
-    // save on input if remember checked
-    inputs.forEach(inp=>{
-      inp.addEventListener('input', maybeAutoSave);
-      inp.addEventListener('change', maybeAutoSave);
-    });
-
-    if(remember){
-      remember.addEventListener('change', ()=>{
-        if(remember.checked){
-          maybeAutoSave();
-        }else{
-          clearPrefs();
-        }
-      });
-    }
-    if(clearBtn){
-      clearBtn.addEventListener('click', (e)=>{
-        e.preventDefault();
-        clearPrefs();
-        if(remember) remember.checked = false;
-        // also clear UI values? No, keep what's typed.
-        const s = document.getElementById('ghStatus');
-        if(s){ s.textContent = '已清除保存的欄位（Token 本來就不會保存）'; s.className='text-sm text-slate-600'; }
-      });
-    }
-  });
-})();
-</script>
-
-  <style>
-    .badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:9999px;background:#f59e0b;color:#fff;font-size:12px}
-    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-  </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <div class="max-w-5xl mx-auto p-4 md:p-6">
-    <h1 class="text-2xl md:text-3xl font-extrabold">最新消息｜公告管理</h1>
-    <p class="text-sm text-slate-600 mt-1">純前端管理。編輯完成後按「下載」產出新的 <code class="mono">news.json</code> 進行部署。</p>
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理（重建版）</h1>
 
-    <div class="mt-4 flex flex-wrap gap-2">
-      <button id="btnLoad" class="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">載入伺服器上的 news.json</button>
-      <label class="px-3 py-2 rounded bg-slate-200 text-slate-800 text-sm hover:bg-slate-300 cursor-pointer">
-        從本機匯入 news.json
-        <input id="fileInput" type="file" accept="application/json" class="hidden"/>
+    <!-- Action Bar -->
+    <div class="flex flex-wrap gap-2 items-center mb-4">
+      <button id="btn-load" class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800">從伺服器載入 /news.json</button>
+
+      <label class="px-4 py-2 rounded bg-white border cursor-pointer hover:bg-slate-100">
+        從本機匯入 JSON
+        <input id="file-input" type="file" accept="application/json" class="hidden" />
       </label>
-      <button id="btnAdd" class="px-3 py-2 rounded bg-emerald-600 text-white text-sm hover:bg-emerald-700">新增一筆</button>
-      <button id="btnDownload" class="px-3 py-2 rounded bg-amber-600 text-white text-sm hover:bg-amber-700">下載更新後的 news.json</button>
+
+      <button id="btn-add" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">新增一筆</button>
+      <button id="btn-download" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">下載 news.json</button>
+
+      <button id="btn-upload-toggle" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500" aria-expanded="false" aria-controls="gh-panel">上傳到 GitHub</button>
+
+      <span id="dirty-ind" class="ml-2 text-xs text-amber-600 hidden">有未儲存變更</span>
     </div>
 
-    <!-- GitHub 一鍵上傳（前端直連 GitHub API） -->
-    <details class="mt-4 bg-white border rounded-xl p-4">
-      <summary class="cursor-pointer text-sm font-medium text-slate-700">一鍵上傳到 GitHub（無需後端）</summary>
-      <div class="grid md:grid-cols-3 gap-3 mt-3">
-        <div class="space-y-1">
-          <label class="block text-xs text-slate-600">擁有者 owner（個人帳號或 org）</label>
-          <input id="ghOwner" class="w-full border rounded px-2 py-1 text-sm" placeholder="your-username">
+    <!-- GitHub Settings Panel -->
+    <div id="gh-panel" class="hidden p-4 bg-white rounded-xl border mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-base font-semibold">上傳設定</div>
+        <button id="btn-upload-close" class="text-sm text-slate-500 hover:underline">隱藏</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Owner</label>
+          <input id="gh-owner" class="w-full border rounded px-2 py-1" placeholder="your-org-or-user" />
         </div>
-        <div class="space-y-1">
-          <label class="block text-xs text-slate-600">Repository</label>
-          <input id="ghRepo" class="w-full border rounded px-2 py-1 text-sm" placeholder="your-repo">
+        <div>
+          <label class="block text-sm font-medium mb-1">Repo</label>
+          <input id="gh-repo" class="w-full border rounded px-2 py-1" placeholder="your-repo" />
         </div>
-        <div class="space-y-1">
-          <label class="block text-xs text-slate-600">分支 branch</label>
-          <input id="ghBranch" class="w-full border rounded px-2 py-1 text-sm" placeholder="main" value="main">
+        <div>
+          <label class="block text-sm font-medium mb-1">Branch</label>
+          <input id="gh-branch" class="w-full border rounded px-2 py-1" placeholder="main" value="main" />
         </div>
-        <div class="space-y-1 md:col-span-2">
-          <label class="block text-xs text-slate-600">檔案路徑（repo 內）</label>
-          <input id="ghPath" class="w-full border rounded px-2 py-1 text-sm mono" placeholder="news.json" value="news.json">
+        <div>
+          <label class="block text-sm font-medium mb-1">Path</label>
+          <input id="gh-path" class="w-full border rounded px-2 py-1" placeholder="public/news.json" value="public/news.json" />
         </div>
-        <div class="space-y-1">
-          <label class="block text-xs text-slate-600">個人存取權杖 PAT（僅 contents 權限）</label>
-          <input id="ghToken" type="password" class="w-full border rounded px-2 py-1 text-sm" placeholder="ghp_...">
+        <div>
+          <label class="block text-sm font-medium mb-1">GitHub Token (PAT)</label>
+          <input id="gh-token" type="password" class="w-full border rounded px-2 py-1" placeholder="ghp_... 或 fine-grained" />
         </div>
-        <div class="space-y-1 md:col-span-3">
-          <label class="block text-xs text-slate-600">Commit 訊息</label>
-          <input id="ghMessage" class="w-full border rounded px-2 py-1 text-sm" placeholder="chore(news): update news.json">
+        <div class="md:col-span-5 flex items-center gap-3">
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="remember-settings" type="checkbox" class="border rounded" /> 記住以上設定（不含 Token）
+          </label>
+          <button id="btn-upload" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500">執行上傳</button>
+          <span id="gh-status" class="text-sm text-slate-600" aria-live="polite"></span>
         </div>
       </div>
-      <div class="mt-3 flex items-center gap-3">
-        <label class="text-sm text-slate-700 inline-flex items-center gap-2 select-none"><input id="ghRemember" type="checkbox" class="align-middle"> 保存資料（不含 Token）</label>
-        <button id="btnGhUpload" class="px-3 py-2 rounded bg-neutral-800 text-white text-sm hover:bg-neutral-900">上傳 news.json 到 GitHub</button>
-        <button id="btnGhClear" class="px-3 py-2 rounded border text-sm hover:bg-slate-50">清除保存</button>
-        <span id="ghStatus" class="text-sm text-slate-600"></span>
-      </div>
-      <p class="mt-2 text-xs text-slate-500">⚠️ 安全性提醒：瀏覽器無法安全保存金鑰，請勿勾選「記住密碼」。此工具僅在你當前瀏覽器記憶體中使用 Token，不寫入 localStorage。</p>
-    <p class="mt-2 text-xs text-slate-500">⚠️ 我們不會保存 Token；若勾選保存，欄位會存於此瀏覽器的 localStorage。</p>
-    </details>
+    </div>
 
-
-
-    <details class="mt-4 bg-white rounded-xl border p-3" open>
-      <summary class="font-bold cursor-pointer">欄位說明</summary>
-      <ul class="list-disc pl-6 text-sm text-slate-700 mt-2 space-y-1">
-        <li><code class="mono">startsAt</code>/<code class="mono">endsAt</code> 控制顯示時間窗（YYYY-MM-DD）。</li>
-        <li><code class="mono">summaryButtonText</code> 可自訂前台展開按鈕文字（預設「查看內容」）。</li>
-      </ul>
-    </details>
-
-    <div id="list" class="mt-4 space-y-3"></div>
-        <!-- 即時預覽區 -->
-        <div id="previewPane" class="mt-6 bg-white rounded-xl border p-4">
-          <div class="flex items-center justify-between">
-            <h2 class="font-bold">即時預覽</h2>
-            <span id="previewHint" class="text-xs text-slate-500">點每一筆的「預覽」或在該筆輸入框輸入時自動更新</span>
-          </div>
-          <div id="preview" class="mt-3 text-sm text-slate-800">
-            <p class="text-slate-500 text-sm">尚未選擇預覽項目。</p>
-          </div>
-        </div>
-
-        <!-- 預覽模板（模擬前台卡片樣式） -->
-        <template id="previewTpl">
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="badge"></span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100" data-field="type"></span>
-            </div>
-            <h3 class="text-lg font-bold mb-1" data-field="title"></h3>
-            <div class="text-xs text-slate-500 mb-2" data-field="period"></div>
-            <div class="prose prose-sm max-w-none">
-              <p data-field="summary"></p>
-              <ul class="list-disc pl-5 space-y-1" data-field="bullets"></ul>
-            </div>
-            <div class="mt-3">
-              <a data-field="cta" class="inline-block px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700" target="_blank" rel="noopener"></a>
-            </div>
-          </div>
-        </template>
-        
+    <!-- Items Container -->
+    <div id="items" class="space-y-6"></div>
   </div>
 
-  <template id="rowTpl">
-    <div class="bg-white rounded-xl border p-4">
-      <div class="flex items-center gap-2">
-        <span class="badge">告</span>
-        <input data-field="title" class="flex-1 border rounded px-2 py-1 text-sm" placeholder="標題">
-        <label class="text-sm flex items-center gap-1">
-          <input type="checkbox" data-field="pinned"> 置頂
-        </label>
-        <button data-action="preview" class="text-sm px-2 py-1 rounded border border-slate-400 hover:bg-slate-50">預覽</button>
-        <button data-action="delete" class="ml-auto text-sm px-2 py-1 rounded border border-red-600 text-red-700 hover:bg-red-50">刪除</button>
+  <!-- ===== Item Template ===== -->
+  <template id="item-tpl">
+    <div class="p-4 bg-white rounded-xl border">
+      <div class="flex items-start justify-between gap-3">
+        <div class="text-lg font-semibold">公告項目</div>
+        <button class="btn-remove text-red-600 text-sm hover:underline">刪除此筆</button>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-3 mt-3">
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">ID</label>
-          <input data-field="id" class="w-full border rounded px-2 py-1 text-sm mono" placeholder="唯一識別，例如 promo-202509">
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">ID</label>
+          <input class="f-id w-full border rounded px-2 py-1" placeholder="ann-20251005-001" />
+          <small class="text-slate-500">只允許小寫英數與連字號，需唯一。</small>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">類型 type（promo/announce）</label>
-          <input data-field="type" class="w-full border rounded px-2 py-1 text-sm" placeholder="promo 或 announce">
+        <div>
+          <label class="block text-sm font-medium mb-1">Type</label>
+          <select class="f-type w-full border rounded px-2 py-1">
+            <option value="promo">promo</option>
+            <option value="announce">announce</option>
+          </select>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">徽章文字 badge</label>
-          <input data-field="badge" class="w-full border rounded px-2 py-1 text-sm" placeholder="告、優…">
+        <div class="flex items-center gap-2 mt-6 md:mt-0">
+          <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" class="f-pinned"> 置頂</label>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">顯示期間 period（純文字）</label>
-          <input data-field="period" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025/09/10 – 2025/09/30">
+        <div>
+          <label class="block text-sm font-medium mb-1">Badge</label>
+          <input class="f-badge w-full border rounded px-2 py-1" placeholder="Hot" />
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">startsAt（YYYY-MM-DD）</label>
-          <input data-field="startsAt" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025-09-10">
+        <div>
+          <label class="block text-sm font-medium mb-1">Title</label>
+          <input class="f-title w-full border rounded px-2 py-1" placeholder="標題" />
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">endsAt（YYYY-MM-DD）</label>
-          <input data-field="endsAt" class="w-full border rounded px-2 py-1 text-sm" placeholder="2025-09-30">
+        <div>
+          <label class="block text-sm font-medium mb-1">Period（第一行文字）</label>
+          <input class="f-period w-full border rounded px-2 py-1" placeholder="2025/10/01 – 2025/10/31" />
         </div>
-        <div class="space-y-2 md:col-span-2">
-          <label class="block text-xs text-slate-600">展開按鈕文字 summaryButtonText</label>
-          <input data-field="summaryButtonText" class="w-full border rounded px-2 py-1 text-sm" placeholder="例如：查看優惠、詳細內容、更多資訊">
+        <div>
+          <label class="block text-sm font-medium mb-1">開始日</label>
+          <input type="date" class="f-start w-full border rounded px-2 py-1" />
         </div>
-        <div class="md:col-span-2 space-y-2">
-          <label class="block text-xs text-slate-600">摘要 summary</label>
-          <textarea data-field="summary" class="w-full border rounded px-2 py-1 text-sm" rows="2" placeholder="簡短說明"></textarea>
+        <div>
+          <label class="block text-sm font-medium mb-1">結束日</label>
+          <input type="date" class="f-end w-full border rounded px-2 py-1" />
         </div>
-        <div class="md:col-span-2 space-y-2">
-          <label class="block text-xs text-slate-600">條列 bullets（每行一項）</label>
-          <textarea data-field="bullets" class="w-full border rounded px-2 py-1 text-sm mono" rows="3" placeholder="到府專業清洗\n使用環保清潔劑"></textarea>
+        <div>
+          <label class="block text-sm font-medium mb-1">展開按鈕文字</label>
+          <input class="f-summary-btn w-full border rounded px-2 py-1" placeholder="查看內容" />
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">CTA 文字</label>
-          <input data-field="ctaText" class="w-full border rounded px-2 py-1 text-sm" placeholder="LINE 聯繫">
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-sm font-medium">第三行(主內容)</label>
+            <div class="flex items-center gap-2">
+              <label class="text-sm">主內容 格式</label>
+              <select class="f-summary-format border rounded px-2 py-1 text-sm">
+                <option value="text">純文字（保留換行）</option>
+                <option value="html">HTML（支援粗體/顏色/大小/置中）</option>
+              </select>
+            </div>
+          </div>
+          <textarea class="f-summary w-full border rounded px-2 py-1 h-28" placeholder="例：<b>粗體</b>、<span style='color:red;font-size:18px;text-align:center;display:block;'>紅 18px 置中</span>、<br>換行"></textarea>
+          <small class="block text-slate-500 mt-1">
+            HTML 模式可用：&lt;b&gt;、&lt;strong&gt;、&lt;i&gt;、&lt;em&gt;、&lt;u&gt;、&lt;br&gt;、&lt;span style='color|font-size|text-align'&gt;
+          </small>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs text-slate-600">CTA 連結</label>
-          <input data-field="ctaHref" class="w-full border rounded px-2 py-1 text-sm" placeholder="https://line.me/...">
+        <div>
+          <label class="block text-sm font-medium mb-1">展開內容（每行一點）</label>
+          <textarea class="f-bullets w-full border rounded px-2 py-1 h-28" placeholder="第一點
+第二點
+第三點"></textarea>
         </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">CTA 文字</label>
+          <input class="f-cta-text w-full border rounded px-2 py-1" placeholder="立即前往" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">CTA 連結</label>
+          <input class="f-cta-href w-full border rounded px-2 py-1" placeholder="https://example.com" />
+        </div>
+      </div>
+
+      <!-- 前台預覽（卡片） -->
+      <div class="mt-4 border rounded p-3">
+        <div class="text-sm text-slate-500 mb-2">前台預覽（與首頁 #news 卡片一致，預設收合）</div>
+        <div class="preview-card"></div>
       </div>
     </div>
   </template>
 
   <script>
-    const $ = s => document.querySelector(s);
-    const listEl = $('#list');
-    const tpl = $('#rowTpl');
+    // ==== State ====
     let items = [];
+    const elItems = document.getElementById('items');
 
-    
-    function render(){
-      listEl.innerHTML = '';
-      if(!items.length){
-        listEl.innerHTML = '<p class="text-sm text-slate-600">目前沒有資料，請點「新增一筆」或「載入」。</p>';
-        // 清空預覽
-        document.getElementById('preview').innerHTML = '<p class="text-slate-500 text-sm">尚未選擇預覽項目。</p>';
-        return;
-      }
+    // ==== Toggle GitHub panel ====
+    const ghPanel = document.getElementById('gh-panel');
+    const btnToggle = document.getElementById('btn-upload-toggle');
+    const btnClose = document.getElementById('btn-upload-close');
 
-      // 置頂排序：pinned=true 的先顯示；其餘維持原順序（瀏覽器 sort 穩定）
-      const sorted = items.slice().sort((a,b)=> (b.pinned===true) - (a.pinned===true));
+    function setPanel(open) {
+      ghPanel.classList.toggle('hidden', !open);
+      btnToggle.setAttribute('aria-expanded', String(open));
+      if (open) ghPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      localStorage.setItem('news-admin-gh-open', open ? '1' : '0');
+    }
+    btnToggle.addEventListener('click', () => setPanel(ghPanel.classList.contains('hidden')));
+    btnClose.addEventListener('click', () => setPanel(false));
+    (function initPanelState(){ setPanel(localStorage.getItem('news-admin-gh-open') === '1'); })();
 
-      sorted.forEach((it, idxSorted) => {
-        const realIdx = items.indexOf(it);
-        const node = tpl.content.cloneNode(true);
+    // ==== Utilities ====
+    function uid() {
+      if (crypto?.randomUUID) return 'ann-' + crypto.randomUUID();
+      return 'ann-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    }
+    function setDirty(v = true) {
+      document.getElementById('dirty-ind').classList.toggle('hidden', !v);
+      window.__dirty = v;
+    }
+    window.addEventListener('beforeunload', (e) => { if (window.__dirty) { e.preventDefault(); e.returnValue = ''; } });
 
-        // 填值
-        node.querySelector('[data-field="title"]').value = it.title || '';
-        node.querySelector('[data-field="id"]').value = it.id || '';
-        node.querySelector('[data-field="type"]').value = it.type || 'announce';
-        node.querySelector('[data-field="badge"]').value = it.badge || '';
-        node.querySelector('[data-field="period"]').value = it.period || '';
-        node.querySelector('[data-field="startsAt"]').value = it.startsAt || '';
-        node.querySelector('[data-field="endsAt"]').value = it.endsAt || '';
-        node.querySelector('[data-field="summaryButtonText"]').value = it.summaryButtonText || '';
-        node.querySelector('[data-field="summary"]').value = it.summary || '';
-        node.querySelector('[data-field="bullets"]').value = (it.bullets||[]).join('\n');
-        node.querySelector('[data-field="ctaText"]').value = it.cta?.text || '';
-        node.querySelector('[data-field="ctaHref"]').value = it.cta?.href || '';
-        node.querySelector('[data-field="pinned"]').checked = !!it.pinned;
-        node.querySelector('.badge').textContent = it.badge || '告';
+    function base64EncodeUnicode(str) {
+      const utf8 = new TextEncoder().encode(str);
+      let binary = ''; utf8.forEach(b => binary += String.fromCharCode(b));
+      return btoa(binary);
+    }
 
-        // 即時雙向綁定（若此筆正在預覽，也同步刷新預覽）
-        node.querySelectorAll('[data-field]').forEach(inp=>{
-          inp.addEventListener('input',(e)=>{
-            const f = inp.getAttribute('data-field');
-            const v = inp.value;
-            const t = items[realIdx];
-            if(f==='title') t.title = v;
-            if(f==='id') t.id = v;
-            if(f==='type') t.type = v;
-            if(f==='badge'){ t.badge = v; /* 更新徽章顯示 */ }
-            if(f==='period') t.period = v;
-            if(f==='startsAt') t.startsAt = v;
-            if(f==='endsAt') t.endsAt = v;
-            if(f==='summaryButtonText') t.summaryButtonText = v;
-            if(f==='summary') t.summary = v;
-            if(f==='bullets') t.bullets = v.split('\n').filter(x=>x.trim().length);
-            if(f==='ctaText'){ t.cta = t.cta || {}; t.cta.text = v; }
-            if(f==='ctaHref'){ t.cta = t.cta || {}; t.cta.href = v; }
-            if(currentPreviewIndex === realIdx){ renderPreview(realIdx); }
-          });
-        });
-        node.querySelector('[data-field="pinned"]').addEventListener('change',(e)=>{
-          items[realIdx].pinned = e.target.checked;
-          render(); // 重新渲染以套用排序
-          if(currentPreviewIndex === realIdx){ renderPreview(realIdx); }
-        });
-
-        // 預覽按鈕
-        const prevBtn = node.querySelector('[data-action="preview"]');
-        if(prevBtn){
-          prevBtn.addEventListener('click', ()=>{
-            currentPreviewIndex = realIdx;
-            renderPreview(realIdx);
-          });
-        }
-
-        // 刪除按鈕
-        node.querySelector('[data-action="delete"]').addEventListener('click', ()=>{
-          if(confirm('確定刪除這一筆嗎？')){
-            items.splice(realIdx, 1);
-            if(currentPreviewIndex === realIdx){ currentPreviewIndex = null; }
-            render();
+    // === 安全 HTML（只允許 b/strong/i/em/u/br 與 span 的 color/font-size/text-align） ===
+    function sanitizeSummaryHTML(html) {
+      const allowed = ['B','STRONG','I','EM','U','BR','SPAN'];
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      (function walk(node) {
+        for (const child of [...node.children]) {
+          if (!allowed.includes(child.tagName)) {
+            const text = document.createTextNode(child.textContent);
+            child.replaceWith(text);
+            continue;
           }
+          if (child.tagName === 'SPAN') {
+            const color = child.style.color;
+            const fsize = child.style.fontSize;
+            const tAlign = child.style.textAlign;
+            child.removeAttribute('style');
+            if (color) child.style.color = color;
+            if (fsize) child.style.fontSize = fsize;
+            if (tAlign) { child.style.textAlign = tAlign; if (!child.style.display) child.style.display = 'block'; }
+            for (const attr of [...child.attributes]) if (attr.name !== 'style') child.removeAttribute(attr.name);
+          } else {
+            for (const attr of [...child.attributes]) child.removeAttribute(attr.name);
+          }
+          walk(child);
+        }
+      })(tmp);
+      return tmp.innerHTML;
+    }
+
+    function validateAll(items) {
+      const idSet = new Set();
+      const errors = [];
+      const idRe = /^[a-z0-9-]+$/;
+      items.forEach((it, idx) => {
+        const p = (field) => `第 ${idx+1} 筆（ID: ${it.id || '未填'}）的「${field}」`;
+        if (!it.id) errors.push(p('ID') + ' 必填');
+        if (it.id && !idRe.test(it.id)) errors.push(p('ID') + ' 僅能包含小寫英數與連字號');
+        if (it.id) { if (idSet.has(it.id)) errors.push(p('ID') + ' 重複'); idSet.add(it.id); }
+        if (!['promo','announce'].includes(it.type || '')) errors.push(p('Type') + ' 限定 promo/announce');
+        if (it.startsAt && !/^\d{4}-\d{2}-\d{2}$/.test(it.startsAt)) errors.push(p('開始日') + ' 需為 YYYY-MM-DD');
+        if (it.endsAt && !/^\d{4}-\d{2}-\d{2}$/.test(it.endsAt)) errors.push(p('結束日') + ' 需為 YYYY-MM-DD');
+        if (it.startsAt && it.endsAt && it.startsAt > it.endsAt) errors.push(p('日期區間') + ' 開始不可晚於結束');
+        if (it.cta?.href) { const ok = /^(https?:\/\/|mailto:)/i.test(it.cta.href); if (!ok) errors.push(p('CTA 連結') + ' 需以 http(s):// 或 mailto: 開頭'); }
+        if (it.summaryFormat && !['text','html'].includes(it.summaryFormat)) errors.push(p('Summary 格式') + ' 僅允許 text/html');
+        if (Array.isArray(it.bullets) && it.bullets.length > 20) errors.push(p('Bullets') + ' 最多 20 行');
+      });
+      return errors;
+    }
+
+    // ==== Rendering ====
+    function renderItems() {
+      elItems.innerHTML = '';
+      items.forEach((item, idx) => {
+        const tpl = document.getElementById('item-tpl');
+        const el = tpl.content.firstElementChild.cloneNode(true);
+
+        const q = (sel) => el.querySelector(sel);
+        const setVal = (sel, val) => q(sel).value = val ?? '';
+
+        setVal('.f-id', item.id);
+        q('.f-id').addEventListener('input', (e) => { item.id = e.target.value.trim(); setDirty(); });
+
+        q('.f-type').value = item.type || 'promo';
+        q('.f-type').addEventListener('change', (e) => { item.type = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        q('.f-pinned').checked = !!item.pinned;
+        q('.f-pinned').addEventListener('change', (e) => { item.pinned = e.target.checked; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-badge', item.badge);
+        q('.f-badge').addEventListener('input', (e) => { item.badge = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-title', item.title);
+        q('.f-title').addEventListener('input', (e) => { item.title = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-period', item.period);
+        q('.f-period').addEventListener('input', (e) => { item.period = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-start', item.startsAt);
+        q('.f-start').addEventListener('change', (e) => {
+          item.startsAt = e.target.value; autoSyncPeriod(el, item); setDirty(); renderPreviewFor(el, item);
         });
 
-        listEl.appendChild(node);
+        setVal('.f-end', item.endsAt);
+        q('.f-end').addEventListener('change', (e) => {
+          item.endsAt = e.target.value; autoSyncPeriod(el, item); setDirty(); renderPreviewFor(el, item);
+        });
+
+        setVal('.f-summary-btn', item.summaryButtonText);
+        q('.f-summary-btn').addEventListener('input', (e) => { item.summaryButtonText = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        q('.f-summary-format').value = item.summaryFormat || 'text';
+        q('.f-summary-format').addEventListener('change', (e) => { item.summaryFormat = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-summary', item.summary);
+        q('.f-summary').addEventListener('input', (e) => { item.summary = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        q('.f-bullets').value = (item.bullets || []).join('\\n');
+        q('.f-bullets').addEventListener('input', (e) => {
+          const lines = e.target.value.split(/\\r?\\n/).map(s => s.trim());
+          item.bullets = lines.filter(Boolean);
+          setDirty(); renderPreviewFor(el, item);
+        });
+
+        setVal('.f-cta-text', item.cta?.text);
+        q('.f-cta-text').addEventListener('input', (e) => { item.cta = item.cta || {}; item.cta.text = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        setVal('.f-cta-href', item.cta?.href);
+        q('.f-cta-href').addEventListener('input', (e) => { item.cta = item.cta || {}; item.cta.href = e.target.value; setDirty(); renderPreviewFor(el, item); });
+
+        q('.btn-remove').addEventListener('click', () => {
+          if (!confirm('確定刪除此筆？')) return;
+          items.splice(idx, 1);
+          renderItems();
+          setDirty();
+        });
+
+        elItems.appendChild(el);
+        renderPreviewFor(el, item);
       });
     }
-    function addItem(){
+
+    function ymdToPeriod(a, b) {
+      if (!a || !b) return '';
+      const [y1,m1,d1] = a.split('-');
+      const [y2,m2,d2] = b.split('-');
+      return `${y1}/${m1}/${d1} – ${y2}/${m2}/${d2}`;
+    }
+
+    function autoSyncPeriod(el, item) {
+      if (item.startsAt && item.endsAt) {
+        const s = ymdToPeriod(item.startsAt, item.endsAt);
+        item.period = s;
+        el.querySelector('.f-period').value = s;
+      }
+    }
+
+    // === 前台預覽卡片 ===
+    function renderPreviewFor(el, item) {
+      const host = el.querySelector('.preview-card');
+      if (!host) return;
+
+      const isHtml = (item.summaryFormat || 'text') === 'html';
+      const rawSummary = item.summary || '';
+      const safeSummary = isHtml ? sanitizeSummaryHTML(rawSummary) : (rawSummary || '');
+
+      const bullets = (Array.isArray(item.bullets) && item.bullets.length)
+        ? `<ul class="list-disc pl-4 space-y-1">${item.bullets.map(x=>`<li>${x}</li>`).join('')}</ul>`
+        : '';
+
+      const cta = (item.cta && item.cta.href)
+        ? `<a class="inline-flex items-center gap-1 text-sm font-medium text-white bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 transition"
+             href="${item.cta.href}" target="_blank" rel="noopener">${(item.cta.text || '了解更多')}</a>`
+        : '';
+
+      const badge = item.badge || (item.type === 'promo' ? '優' : '告');
+      const pinned = item.pinned ? '<span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-600 text-white">PIN</span>' : '';
+      const period = item.period ? `<p class="text-sm text-gray-700">${item.period}</p>` : '';
+
+      const summaryBlock = isHtml
+        ? `<div class="mt-2 text-sm text-gray-700">${safeSummary}</div>`
+        : (rawSummary
+            ? `<p class="mt-2 text-sm text-gray-700" style="white-space:pre-line">${safeSummary}</p>`
+            : '');
+
+      const hasDetails = !!(bullets || cta);
+      const summaryBtn = item.summaryButtonText || '查看內容';
+
+      const details = hasDetails ? `
+        <details class="mt-3">
+          <summary class="inline-flex items-center gap-1 text-sm font-medium text-blue-700 cursor-pointer">${summaryBtn}</summary>
+          <div class="mt-3 rounded border border-amber-200 bg-amber-50 p-3">
+            ${bullets}
+            ${cta ? `<div class="mt-2">${cta}</div>` : ''}
+          </div>
+        </details>` : '';
+
+      const title = item.title || '';
+      host.innerHTML = `
+<article class="rounded-lg border border-amber-200 bg-white p-4 md:p-5 shadow">
+  <div class="flex items-center gap-2 mb-2">
+    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white text-xs">${badge}</span>
+    <h3 class="font-bold text-gray-900">${title}</h3>
+    ${pinned}
+  </div>
+  ${period}
+  ${summaryBlock}
+  ${details}
+</article>`;
+    }
+
+    // ==== Actions ====
+    document.getElementById('btn-add').addEventListener('click', () => {
       items.unshift({
-        id: 'ann-' + Date.now(),
+        id: uid(),
         type: 'announce',
-        badge: '告',
+        pinned: false,
+        badge: '',
         title: '',
         period: '',
+        startsAt: '',
+        endsAt: '',
         summaryButtonText: '查看內容',
+        summaryFormat: 'text',
         summary: '',
         bullets: [],
-        cta: { text:'', href:'' },
-        pinned: false,
-        startsAt: '',
-        endsAt: ''
+        cta: { text: '', href: '' }
       });
-      render();
-    }
-
-    function importLocal(file){
-      const reader = new FileReader();
-      reader.onload = e => {
-        try{
-          const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)) throw new Error('格式應為陣列');
-          items = data;
-          render();
-        }catch(err){
-          alert('匯入失敗：' + err.message);
-        }
-      };
-      reader.readAsText(file, 'utf-8');
-    }
-
-    document.getElementById('btnLoad').addEventListener('click', loadFromServer);
-    document.getElementById('btnDownload').addEventListener('click', downloadJson);
-    document.getElementById('btnAdd').addEventListener('click', addItem);
-    document.getElementById('fileInput').addEventListener('change', (e)=>{
-      const f = e.target.files?.[0];
-      if(f) importLocal(f);
-      e.target.value='';
+      renderItems();
+      setDirty();
     });
+
+    document.getElementById('btn-load').addEventListener('click', async () => {
+      try {
+        const res = await fetch('news.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('JSON 不是陣列');
+        items = data.map(x => ({ ...x }));
+        renderItems();
+        setDirty(false);
+      } catch (e) {
+        alert('載入失敗：' + e.message);
+      }
+    });
+
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      try {
+        const txt = await f.text();
+        const data = JSON.parse(txt);
+        if (!Array.isArray(data)) throw new Error('JSON 不是陣列');
+        items = data.map(x => ({ ...x }));
+        renderItems();
+        setDirty();
+      } catch (err) {
+        alert('匯入失敗：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    });
+
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const errs = validateAll(items);
+      if (errs.length) { alert('下載前請先修正：\\n- ' + errs.join('\\n- ')); return; }
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'news.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setDirty(false);
+    });
+
+    // ==== GitHub Upload ====
+    const ghOwner = document.getElementById('gh-owner');
+    const ghRepo = document.getElementById('gh-repo');
+    const ghBranch = document.getElementById('gh-branch');
+    const ghPath = document.getElementById('gh-path');
+    const ghToken = document.getElementById('gh-token');
+    const ghStatus = document.getElementById('gh-status');
+    const remember = document.getElementById('remember-settings');
+
+    (function loadRemembered(){
+      const raw = localStorage.getItem('news-admin-gh');
+      if (!raw) return;
+      try {
+        const s = JSON.parse(raw);
+        ghOwner.value = s.owner || '';
+        ghRepo.value = s.repo || '';
+        ghBranch.value = s.branch || 'main';
+        ghPath.value = s.path || 'public/news.json';
+        remember.checked = true;
+      } catch {}
+    })();
+
+    remember.addEventListener('change', () => {
+      if (remember.checked) {
+        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
+        localStorage.setItem('news-admin-gh', JSON.stringify(s));
+      } else {
+        localStorage.removeItem('news-admin-gh');
+      }
+    });
+
+    ['input','change'].forEach(ev => {
+      [ghOwner, ghRepo, ghBranch, ghPath].forEach(el => el.addEventListener(ev, () => {
+        if (!remember.checked) return;
+        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
+        localStorage.setItem('news-admin-gh', JSON.stringify(s));
+      }));
+    });
+
+    async function githubRequest(path, method = 'GET', body) {
+      const token = ghToken.value.trim();
+      if (!token) throw new Error('請先輸入 GitHub Token');
+      const res = await fetch(`https://api.github.com${path}`, {
+        method,
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`GitHub ${res.status}: ${t}`);
+      }
+      return res.json();
+    }
+
+    async function getFileSHA(owner, repo, branch, path) {
+      try {
+        const data = await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`);
+        return data.sha;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    document.getElementById('btn-upload').addEventListener('click', async () => {
+      const owner = ghOwner.value.trim();
+      const repo = ghRepo.value.trim();
+      const branch = ghBranch.value.trim() || 'main';
+      const path = ghPath.value.trim() || 'public/news.json';
+      ghStatus.textContent = '檢查中…';
+
+      const errs = validateAll(items);
+      if (errs.length) { alert('上傳前請先修正：\\n- ' + errs.join('\\n- ')); ghStatus.textContent = ''; return; }
+
+      try {
+        const sha = await getFileSHA(owner, repo, branch, path);
+        ghStatus.textContent = '上傳中…';
+        const content = base64EncodeUnicode(JSON.stringify(items, null, 2));
+        const message = `chore(news): update news.json @ ${new Date().toISOString()}`;
+        const body = { message, content, branch };
+        if (sha) body.sha = sha;
+        await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, 'PUT', body);
+        ghStatus.textContent = '✅ 上傳完成';
+        setDirty(false);
+      } catch (e) {
+        ghStatus.textContent = '❌ 失敗';
+        alert('上傳失敗：' + e.message + '\\n\\n常見原因：\\n- Token 未授權 Contents: Read & write 或未 Authorize SSO\\n- Owner/Repo/Branch/Path 錯誤\\n- 分支保護規則阻擋直接寫入');
+      }
+    });
+
+    // 首次載入渲染
+    renderItems();
   </script>
 </body>
 </html>
