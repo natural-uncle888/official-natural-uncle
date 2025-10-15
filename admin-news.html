@@ -425,7 +425,7 @@
       });
     }
 
-    // 預覽卡片（含 S2 藍色按鈕展開、E1 展開區塊）
+    // 預覽卡片（S2 藍色按鈕展開、E1 展開區塊、按鈕文字依 summaryButtonText）
     function renderPreview(hostEl, item) {
       const container = hostEl.querySelector('.preview-card');
       if (!container) return;
@@ -445,14 +445,22 @@
 
       // 展開狀態（預設關閉）
       const opened = expandState.get(item.id) || false;
-      const btnText = opened ? '🔼 收合內容' : '🔽 查看內容';
+
+      // 按鈕文字：優先使用設定，否則預設 "查看內容"
+      const baseBtnText = (item.summaryButtonText && item.summaryButtonText.trim()) ? item.summaryButtonText.trim() : '查看內容';
+      const btnText = opened ? `🔼 ${baseBtnText}（收合）` : `🔽 ${baseBtnText}`;
+
+      // CTA
       const ctaHTML = (item.cta && item.cta.href)
         ? `<a class="inline-flex items-center gap-1 text-sm font-medium text-white bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 transition"
              href="${item.cta.href}" target="_blank" rel="noopener">${item.cta.text || '了解更多'} ➜</a>`
         : '';
 
-      const details = (bulletsHTML || ctaHTML)
-        ? `
+      // 展開內容（僅當 bullets 或 CTA 存在時才顯示按鈕/區塊）
+      const hasDetails = !!(bulletsHTML || ctaHTML);
+
+      const details = hasDetails ? `
+          <!-- P1：按鈕在 Summary 下方靠左 -->
           <button type="button"
             class="btn-toggle-details mt-3 inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded
                    bg-blue-600 text-white hover:bg-blue-700 transition">
@@ -462,8 +470,7 @@
             <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 space-y-2">
               ${bulletsHTML}
               ${ctaHTML ? `<div class="pt-1">${ctaHTML}</div>` : ''}
-            </div>` : ''}`
-        : '';
+            </div>` : ''}` : '';
 
       const badge = item.badge || (item.type === 'promo' ? '優' : '告');
       const pinned = item.pinned ? '<span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-600 text-white">PIN</span>' : '';
