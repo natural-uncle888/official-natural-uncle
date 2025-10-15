@@ -7,8 +7,7 @@
   <!-- Tailwind CDN（開發/內部工具可用；上線請改用編譯版） -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* 讓 bullets 的每一行都正確顯示圓點 */
-    ul li { display: list-item; }
+    ul li { display: list-item; } /* 確保 bullets 多行顯示 */
     details[open] summary { margin-bottom: 0.5rem; }
     code { background: #f1f5f9; padding: 2px 4px; border-radius: 4px; }
   </style>
@@ -16,10 +15,10 @@
 <body class="bg-slate-50 text-slate-900">
   <div class="max-w-6xl mx-auto p-6 space-y-6">
 
-    <h1 class="text-2xl font-bold">最新消息｜公告管理工具</h1>
+    <h1 class="text-2xl font-bold mb-4">最新消息｜公告管理工具</h1>
 
-    <!-- Action Bar -->
-    <div class="flex flex-wrap gap-2 items-center">
+    <!-- ✅ Action Bar -->
+    <div class="flex flex-wrap gap-2 items-center mb-4">
       <button id="btn-load" class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800">
         從伺服器載入 /news.json
       </button>
@@ -44,7 +43,7 @@
       <span id="dirty-ind" class="ml-2 text-xs text-amber-600 hidden">有未儲存變更</span>
     </div>
 
-    <!-- GitHub 設定區 -->
+    <!-- ✅ GitHub 設定區 -->
     <div id="gh-panel" class="hidden p-4 bg-white rounded-xl border">
       <div class="flex items-center justify-between mb-3">
         <div class="text-base font-semibold">上傳設定</div>
@@ -85,8 +84,7 @@
         <span id="gh-status" class="text-sm text-slate-500"></span>
       </div>
     </div>
-
-    <!-- 📘 使用教學面板（可收合） -->
+    <!-- ✅ 使用教學面板 -->
     <details id="guide-panel" class="p-4 bg-white rounded-xl border">
       <summary class="cursor-pointer text-base font-semibold text-blue-700">
         📘 使用說明與 HTML 編輯教學（點我展開）
@@ -107,7 +105,6 @@
             <div>&lt;span style="font-size:18px"&gt;放大文字 18px&lt;/span&gt;</div>
             <div>&lt;span style="text-align:center;display:block"&gt;置中內容&lt;/span&gt;</div>
           </div>
-          <p class="mt-1 text-amber-700 text-xs">安全性：系統會自動移除危險標籤（如 <code>&lt;script&gt;</code>）。</p>
         </section>
 
         <!-- Bullets 教學 -->
@@ -170,18 +167,17 @@
                 <div class="p-1 flex justify-between"><span>Slate</span><code>#64748B</code></div>
               </button>
             </div>
-            <p class="text-slate-500 px-3 pb-2">提示：可用於 <code>&lt;span style="color:#HEX"&gt;</code></p>
+            <p class="text-slate-500 px-3 pb-2">提示：可用於 <code>&lt;span style="color:HEX"&gt;</code></p>
           </details>
         </section>
       </div>
     </details>
-
-    <!-- Items Container -->
+    <!-- ✅ Items Container -->
     <div id="items" class="space-y-6"></div>
 
   </div> <!-- end wrapper -->
 
-  <!-- 單筆 Item 模板 -->
+  <!-- ✅ 單筆 Item 的模板 -->
   <template id="item-tpl">
     <div class="p-4 bg-white rounded-xl border shadow-sm">
       <div class="flex items-start justify-between">
@@ -189,7 +185,7 @@
         <button class="btn-remove text-red-600 text-sm hover:underline">刪除這筆</button>
       </div>
 
-      <!-- 基本欄位 -->
+      <!-- ✅ 基本欄位 -->
       <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <label class="block text-sm font-medium mb-1">ID（唯一）</label>
@@ -242,10 +238,10 @@
         </div>
       </div>
 
-      <!-- Summary + Bullets -->
+      <!-- ✅ Summary + Bullets -->
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- Summary -->
+        <!-- ✅ Summary -->
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-sm font-medium">主內容 Summary</label>
@@ -258,7 +254,7 @@
             placeholder="支援換行、粗體、顏色..."></textarea>
         </div>
 
-        <!-- Bullets（支援 HTML） -->
+        <!-- ✅ Bullets（支援 HTML） -->
         <div>
           <label class="block text-sm font-medium mb-1">展開內容 Bullets（每行一項）</label>
           <textarea class="f-bullets w-full border rounded px-2 py-2 h-28"
@@ -267,7 +263,7 @@
         </div>
       </div>
 
-      <!-- CTA -->
+      <!-- ✅ CTA -->
       <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium mb-1">CTA 顯示文字</label>
@@ -279,50 +275,42 @@
         </div>
       </div>
 
-      <!-- 預覽 -->
+      <!-- ✅ 預覽 -->
       <div class="mt-6 border rounded p-4 bg-slate-50">
         <h3 class="text-sm text-slate-500 mb-2">預覽（前台呈現方式模擬）</h3>
         <div class="preview-card text-sm text-slate-800"></div>
       </div>
     </div>
   </template>
-
   <script>
     // -----------------------------
-    // 狀態
+    // ✅ 狀態
     // -----------------------------
     let items = [];
     const elItems = document.getElementById('items');
 
-    // 每筆的展開狀態（不寫回 JSON，只做預覽用）
-    const expandState = new Map(); // key: item.id, value: boolean
-
     // -----------------------------
-    // GitHub 面板開關
+    // ✅ GitHub 面板開關
     // -----------------------------
     const ghPanel = document.getElementById('gh-panel');
     document.getElementById('btn-upload-toggle').addEventListener('click', () => {
-      const open = ghPanel.classList.contains('hidden');
-      ghPanel.classList.toggle('hidden', !open);
-      localStorage.setItem('news-admin-gh-open', open ? '1' : '0');
+      ghPanel.classList.toggle('hidden');
     });
     document.getElementById('btn-upload-close').addEventListener('click', () => {
       ghPanel.classList.add('hidden');
-      localStorage.setItem('news-admin-gh-open', '0');
     });
-    // 恢復面板開合狀態
-    (function initPanel(){
-      const open = localStorage.getItem('news-admin-gh-open') === '1';
-      ghPanel.classList.toggle('hidden', !open);
-    })();
 
     // -----------------------------
-    // Utility
+    // ✅ Utility：生成 unique ID
     // -----------------------------
     function uid() {
       if (crypto?.randomUUID) return 'ann-' + crypto.randomUUID();
       return 'ann-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
     }
+
+    // -----------------------------
+    // ✅ Utility：標記 dirty
+    // -----------------------------
     function setDirty(v = true) {
       const ind = document.getElementById('dirty-ind');
       if (v) {
@@ -334,7 +322,9 @@
       }
     }
 
-    // 安全 HTML（允許基本標籤）
+    // -----------------------------
+    // ✅ HTML 安全過濾（允許基本標籤）
+    // -----------------------------
     function sanitizeHTML(html) {
       const allowed = ['B','I','U','STRONG','EM','BR','SPAN'];
       const temp = document.createElement('div');
@@ -343,25 +333,13 @@
       (function walk(node) {
         [...node.children].forEach(child => {
           if (!allowed.includes(child.tagName)) {
-            // 移除標籤保留文字
             child.replaceWith(...child.childNodes);
           } else if (child.tagName === 'SPAN') {
-            // 僅允許 color / font-size / text-align
             let style = child.getAttribute('style') || '';
-            // 簡單白名單：擷取允許屬性
-            const allow = [];
-            const color = style.match(/color\s*:\s*[^;]+/i);
-            const fsize = style.match(/font-size\s*:\s*[^;]+/i);
-            const align = style.match(/text-align\s*:\s*[^;]+/i);
-            if (color) allow.push(color[0]);
-            if (fsize) allow.push(fsize[0]);
-            if (align) { allow.push(align[0]); if (!/display\s*:\s*block/i.test(style)) allow.push('display:block'); }
-            child.setAttribute('style', allow.join(';'));
-            // 移除其他屬性
-            [...child.attributes].forEach(a => { if (a.name !== 'style') child.removeAttribute(a.name); });
-          } else {
-            // 非 span，移除所有屬性
-            [...child.attributes].forEach(a => child.removeAttribute(a.name));
+            child.removeAttribute('style');
+            if (/color|font-size|text-align/.test(style)) {
+              child.setAttribute('style', style);
+            }
           }
           walk(child);
         });
@@ -370,7 +348,7 @@
     }
 
     // -----------------------------
-    // 渲染 Items
+    // ✅ 渲染 Items
     // -----------------------------
     function renderItems() {
       elItems.innerHTML = '';
@@ -379,126 +357,74 @@
         const node = tpl.content.cloneNode(true);
         const q = sel => node.querySelector(sel);
 
-        // 刪除
         q('.btn-remove').addEventListener('click', () => {
           if (confirm('確定要刪除這筆資料？')) {
             items.splice(idx, 1);
-            expandState.delete(item.id);
             renderItems();
             setDirty();
           }
         });
 
-        // 填入資料
+        // --- 填入資料 ---
         q('.f-id').value = item.id;
-        q('.f-type').value = item.type || 'announce';
-        q('.f-pinned').checked = !!item.pinned;
+        q('.f-type').value = item.type;
+        q('.f-pinned').checked = item.pinned;
         q('.f-badge').value = item.badge || '';
         q('.f-title').value = item.title || '';
         q('.f-period').value = item.period || '';
         q('.f-start').value = item.startsAt || '';
         q('.f-end').value = item.endsAt || '';
-        q('.f-summary-btn').value = item.summaryButtonText || '查看內容';
+        q('.f-summary-btn').value = item.summaryButtonText || '';
         q('.f-summary').value = item.summary || '';
         q('.f-summary-format').value = item.summaryFormat || 'text';
         q('.f-bullets').value = (item.bullets || []).join('\n');
+        q('.f-cta-text').value = item.cta?.text || '';
+        q('.f-cta-href').value = item.cta?.href || '';
 
-        // 綁事件
-        q('.f-id').addEventListener('input', e => { item.id = e.target.value.trim(); setDirty(); });
-        q('.f-type').addEventListener('change', e => { item.type = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-pinned').addEventListener('change', e => { item.pinned = e.target.checked; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-badge').addEventListener('input', e => { item.badge = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-title').addEventListener('input', e => { item.title = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-period').addEventListener('input', e => { item.period = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-start').addEventListener('change', e => { item.startsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-end').addEventListener('change', e => { item.endsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary-btn').addEventListener('input', e => { item.summaryButtonText = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary').addEventListener('input', e => { item.summary = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary-format').addEventListener('change', e => { item.summaryFormat = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+        // --- 綁定輸入事件 ---
+        q('.f-title').addEventListener('input', e => { item.title = e.target.value; setDirty(); renderPreview(node, item); });
+        q('.f-summary').addEventListener('input', e => { item.summary = e.target.value; setDirty(); renderPreview(node, item); });
+        q('.f-summary-format').addEventListener('change', e => { item.summaryFormat = e.target.value; setDirty(); renderPreview(node, item); });
         q('.f-bullets').addEventListener('input', e => {
-          item.bullets = e.target.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-          setDirty(); renderPreview(elItems.lastElementChild || elItems, item);
+          item.bullets = e.target.value.split('\n').filter(x => x.trim());
+          setDirty(); renderPreview(node, item);
         });
 
+        // --- 插入 DOM ---
         elItems.appendChild(node);
         renderPreview(elItems.lastElementChild, item);
       });
     }
-
-    // 預覽卡片（含 S2 藍色按鈕展開、E1 展開區塊）
-    function renderPreview(hostEl, item) {
-      const container = hostEl.querySelector('.preview-card');
+    // -----------------------------
+    // ✅ 預覽卡片渲染
+    // -----------------------------
+    function renderPreview(el, item) {
+      const container = el.querySelector('.preview-card');
       if (!container) return;
 
-      // Summary
       const summary =
-        (item.summaryFormat || 'text') === 'html'
+        item.summaryFormat === 'html'
           ? sanitizeHTML(item.summary || '')
           : (item.summary || '').replace(/\n/g, '<br>');
 
-      // Bullets（HTML 安全 + 每行圓點）
-      const bulletsHTML = (Array.isArray(item.bullets) && item.bullets.length)
-        ? `<ul class="list-disc pl-4 space-y-1 [&>li]:block">
-            ${item.bullets.map(x => `<li>${sanitizeHTML(x)}</li>`).join('')}
-           </ul>`
-        : '';
-
-      // 展開狀態（預設關閉）
-      const opened = expandState.get(item.id) || false;
-      const btnText = opened ? '🔼 收合內容' : '🔽 查看內容';
-      const ctaHTML = (item.cta && item.cta.href)
-        ? `<a class="inline-flex items-center gap-1 text-sm font-medium text-white bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 transition"
-             href="${item.cta.href}" target="_blank" rel="noopener">${item.cta.text || '了解更多'} ➜</a>`
-        : '';
-
-      const details = (bulletsHTML || ctaHTML)
-        ? `
-          <button type="button"
-            class="btn-toggle-details mt-3 inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded
-                   bg-blue-600 text-white hover:bg-blue-700 transition">
-            ${btnText}
-          </button>
-          ${opened ? `
-            <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 space-y-2">
-              ${bulletsHTML}
-              ${ctaHTML ? `<div class="pt-1">${ctaHTML}</div>` : ''}
-            </div>` : ''}`
-        : '';
-
-      const badge = item.badge || (item.type === 'promo' ? '優' : '告');
-      const pinned = item.pinned ? '<span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-600 text-white">PIN</span>' : '';
-      const period = item.period ? `<p class="text-sm text-gray-700">${item.period}</p>` : '';
-      const title = item.title || '';
+      const bullets =
+        item.bullets?.length
+          ? `<ul class="list-disc pl-4 space-y-1 [&>li]:block">
+              ${item.bullets.map(b => `<li>${sanitizeHTML(b)}</li>`).join('')}
+            </ul>`
+          : '';
 
       container.innerHTML = `
-<article class="rounded-lg border border-amber-200 bg-white p-4 md:p-5 shadow">
-  <div class="flex items-center gap-2 mb-2">
-    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white text-xs">${badge}</span>
-    <h3 class="font-bold text-gray-900">${title}</h3>
-    ${pinned}
-  </div>
-  ${period}
-  ${(item.summary || '').trim()
-    ? ((item.summaryFormat || 'text') === 'html'
-        ? `<div class="mt-2 text-sm text-gray-700">${summary}</div>`
-        : `<p class="mt-2 text-sm text-gray-700" style="white-space:pre-line">${item.summary}</p>`)
-    : ''}
-  ${details}
-</article>`;
-
-      // 綁定展開按鈕
-      const btn = container.querySelector('.btn-toggle-details');
-      if (btn) {
-        btn.addEventListener('click', () => {
-          const now = !!expandState.get(item.id);
-          expandState.set(item.id, !now);
-          renderPreview(hostEl, item);
-        });
-      }
+        <article class="space-y-2">
+          <h4 class="font-bold">${item.title || ''}</h4>
+          <div class="text-slate-600">${summary}</div>
+          ${bullets}
+          ${item.cta?.href ? `<a href="${item.cta.href}" target="_blank" class="text-blue-600 underline">${item.cta.text || '了解更多'}</a>` : ''}
+        </article>`;
     }
 
     // -----------------------------
-    // 載入 / 匯入 / 下載 / 新增
+    // ✅ 載入 news.json（保持原功能）
     // -----------------------------
     document.getElementById('btn-load').addEventListener('click', async () => {
       try {
@@ -507,7 +433,6 @@
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error('JSON 必須是陣列');
         items = data;
-        expandState.clear();
         renderItems();
         setDirty(false);
       } catch (err) {
@@ -515,13 +440,15 @@
       }
     });
 
+    // -----------------------------
+    // ✅ 匯入 JSON
+    // -----------------------------
     document.getElementById('file-input').addEventListener('change', async e => {
       const file = e.target.files[0];
       if (!file) return;
       try {
         const text = await file.text();
         items = JSON.parse(text);
-        expandState.clear();
         renderItems();
         setDirty();
       } catch (err) {
@@ -530,39 +457,22 @@
       e.target.value = '';
     });
 
+    // -----------------------------
+    // ✅ 下載 JSON
+    // -----------------------------
     document.getElementById('btn-download').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'news.json';
+      a.href = url;
+      a.download = 'news.json';
       a.click();
       URL.revokeObjectURL(url);
       setDirty(false);
     });
 
-    document.getElementById('btn-add').addEventListener('click', () => {
-      const it = {
-        id: uid(),
-        type: 'announce',
-        pinned: false,
-        badge: '',
-        title: '',
-        period: '',
-        startsAt: '',
-        endsAt: '',
-        summaryButtonText: '查看內容',
-        summaryFormat: 'text',
-        summary: '',
-        bullets: [],
-        cta: { text: '', href: '' }
-      };
-      items.unshift(it);
-      renderItems();
-      setDirty();
-    });
-
     // -----------------------------
-    // 色票點擊複製 HEX
+    // ✅ 色票點擊複製 HEX
     // -----------------------------
     document.addEventListener('click', async e => {
       const sw = e.target.closest('.swatch');
@@ -571,120 +481,70 @@
       if (!hex) return;
       try {
         await navigator.clipboard.writeText(hex);
-        const codeEl = sw.querySelector('code');
-        const old = codeEl?.textContent || hex;
-        if (codeEl) {
-          codeEl.textContent = 'Copied!';
-          setTimeout(() => codeEl.textContent = old, 800);
-        }
+        sw.querySelector('code').textContent = 'Copied!';
+        setTimeout(() => sw.querySelector('code').textContent = hex, 800);
       } catch {
         alert('無法複製，請手動複製: ' + hex);
       }
     });
 
     // -----------------------------
-    // GitHub 上傳
+    // ✅ 新增一筆
     // -----------------------------
-    const ghOwner = document.getElementById('gh-owner');
-    const ghRepo = document.getElementById('gh-repo');
-    const ghBranch = document.getElementById('gh-branch');
-    const ghPath = document.getElementById('gh-path');
-    const ghToken = document.getElementById('gh-token');
-    const ghStatus = document.getElementById('gh-status');
-    const remember = document.getElementById('remember-settings');
-
-    (function loadRemembered(){
-      const raw = localStorage.getItem('news-admin-gh');
-      if (!raw) return;
-      try {
-        const s = JSON.parse(raw);
-        ghOwner.value = s.owner || '';
-        ghRepo.value = s.repo || '';
-        ghBranch.value = s.branch || 'main';
-        ghPath.value = s.path || 'news.json';
-        remember.checked = true;
-      } catch {}
-    })();
-
-    remember.addEventListener('change', () => {
-      if (remember.checked) {
-        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
-        localStorage.setItem('news-admin-gh', JSON.stringify(s));
-      } else {
-        localStorage.removeItem('news-admin-gh');
-      }
+    document.getElementById('btn-add').addEventListener('click', () => {
+      items.unshift({
+        id: uid(),
+        type: 'announce',
+        pinned: false,
+        badge: '',
+        title: '',
+        period: '',
+        startsAt: '',
+        endsAt: '',
+        summaryFormat: 'text',
+        summary: '',
+        bullets: [],
+        cta: { text: '', href: '' }
+      });
+      renderItems();
+      setDirty();
     });
 
-    ['input','change'].forEach(ev => {
-      [ghOwner, ghRepo, ghBranch, ghPath].forEach(el => el.addEventListener(ev, () => {
-        if (!remember.checked) return;
-        const s = { owner: ghOwner.value.trim(), repo: ghRepo.value.trim(), branch: ghBranch.value.trim(), path: ghPath.value.trim() };
-        localStorage.setItem('news-admin-gh', JSON.stringify(s));
-      }));
-    });
-
-    document.getElementById('toggle-token').addEventListener('click', () => {
-      const isHidden = ghToken.type === 'password';
-      ghToken.type = isHidden ? 'text' : 'password';
-      document.getElementById('toggle-token').textContent = isHidden ? '隱藏' : '顯示';
-    });
-    // 記住 Token（可移除）
-    ghToken.value = localStorage.getItem('news-admin-gh-token') || '';
-    ghToken.addEventListener('input', () => {
-      localStorage.setItem('news-admin-gh-token', ghToken.value.trim());
-    });
-
+    // -----------------------------
+    // ✅ GitHub 上傳功能
+    // -----------------------------
     async function githubRequest(path, method = 'GET', body) {
-      const token = ghToken.value.trim();
-      if (!token) throw new Error('請先輸入 GitHub Token');
-      const res = await fetch(`https://api.github.com${path}`, {
+      const token = document.getElementById('gh-token').value;
+      return await fetch(`https://api.github.com${path}`, {
         method,
         headers: {
           'Accept': 'application/vnd.github+json',
           'Authorization': `Bearer ${token}`
         },
         body: body ? JSON.stringify(body) : undefined
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`GitHub ${res.status}: ${t}`);
-      }
-      return res.json();
-    }
-
-    async function getFileSHA(owner, repo, branch, path) {
-      try {
-        const data = await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`);
-        return data.sha;
-      } catch (e) {
-        return null;
-      }
+      }).then(r => r.json());
     }
 
     document.getElementById('btn-upload').addEventListener('click', async () => {
-      const owner = ghOwner.value.trim();
-      const repo = ghRepo.value.trim();
-      const branch = ghBranch.value.trim() || 'main';
-      const path = ghPath.value.trim() || 'news.json';
-      ghStatus.textContent = '檢查中…';
-
       try {
-        const sha = await getFileSHA(owner, repo, branch, path);
-        ghStatus.textContent = '上傳中…';
+        const owner = document.getElementById('gh-owner').value;
+        const repo = document.getElementById('gh-repo').value;
+        const branch = document.getElementById('gh-branch').value;
+        const path = document.getElementById('gh-path').value;
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(items, null, 2))));
-        const message = `chore(news): update news.json @ ${new Date().toISOString()}`;
-        const body = { message, content, branch };
-        if (sha) body.sha = sha;
-        await githubRequest(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, 'PUT', body);
-        ghStatus.textContent = '✅ 上傳完成';
+        await githubRequest(`/repos/${owner}/${repo}/contents/${path}`, 'PUT', {
+          message: 'Update news.json',
+          content,
+          branch
+        });
+        alert('✅ 上傳成功');
         setDirty(false);
-      } catch (e) {
-        ghStatus.textContent = '❌ 失敗';
-        alert('上傳失敗：' + e.message + '\n\n常見原因：\n- Token 權限不足（Contents: Read & write）或 SSO 未授權\n- Owner/Repo/Branch/Path 錯誤\n- 分支保護規則阻擋直接寫入');
+      } catch (err) {
+        alert('❌ 上傳失敗：' + err.message);
       }
     });
 
-    // 初始化
+    // 初始化渲染
     renderItems();
   </script>
 </body>
