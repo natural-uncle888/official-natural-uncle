@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = document.createElement("div");
       card.className = "bg-white p-4 rounded shadow-sm border border-slate-200 space-y-2";
 
-      card.innerHTML = \`
+      card.innerHTML = `
         <div class="flex items-center justify-between">
           <span class="text-xs px-2 py-1 bg-sky-100 text-sky-700 rounded-full">\${item.badge || "一般"}</span>
           \${item.pinned ? '<span class="text-red-500 text-xs">📌 置頂</span>' : ""}
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
           \${(item.bullets || []).map(b => "<li>" + safeHTML(b) + "</li>").join("")}
         </ul>
         \${item.cta ? \`<a href="\${item.cta.link}" target="_blank" class="inline-block mt-2 text-sky-600 hover:underline">\${item.cta.text}</a>\` : ""}
-      \`;
+      `;
       listEl.appendChild(card);
     });
   }
