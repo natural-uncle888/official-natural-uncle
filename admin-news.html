@@ -1,12 +1,13 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>最新消息｜公告管理</title>
-  <!-- Tailwind CDN（開發/內部工具可用；上線請改用編譯版） -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>最新消息｜公告管理</title>
+<!-- Tailwind CDN（開發/內部工具可用；上線請改用編譯版） -->
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
     /* 讓 bullets 的每一行都正確顯示圓點 */
     ul li { display: list-item; }
     details[open] summary { margin-bottom: 0.5rem; }
@@ -14,280 +15,246 @@
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <div class="max-w-6xl mx-auto p-6 space-y-6">
-
-    <h1 class="text-2xl font-bold">最新消息｜公告管理工具</h1>
-
-    <!-- Action Bar -->
-    <div class="flex flex-wrap gap-2 items-center">
-      <button id="btn-load" class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800">
+<div class="max-w-6xl mx-auto p-6 space-y-6">
+<h1 class="text-2xl font-bold">最新消息｜公告管理工具</h1>
+<!-- Action Bar -->
+<div class="flex flex-wrap gap-2 items-center">
+<button class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800" id="btn-load">
         從伺服器載入 /news.json
       </button>
-
-      <label class="px-4 py-2 rounded bg-white border cursor-pointer hover:bg-slate-100">
+<label class="px-4 py-2 rounded bg-white border cursor-pointer hover:bg-slate-100">
         從本機匯入 JSON
-        <input id="file-input" type="file" accept="application/json" class="hidden" />
-      </label>
-
-      <button id="btn-add" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">
+        <input accept="application/json" class="hidden" id="file-input" type="file"/>
+</label>
+<button class="px-4 py-2 rounded bg-white border hover:bg-slate-100" id="btn-add">
         新增一筆
       </button>
-      <button id="btn-download" class="px-4 py-2 rounded bg-white border hover:bg-slate-100">
+<button class="px-4 py-2 rounded bg-white border hover:bg-slate-100" id="btn-download">
         下載 news.json
       </button>
-
-      <button id="btn-upload-toggle" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500"
-              aria-expanded="false" aria-controls="gh-panel">
+<button aria-controls="gh-panel" aria-expanded="false" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500" id="btn-upload-toggle">
         上傳到 GitHub
       </button>
-
-      <span id="dirty-ind" class="ml-2 text-xs text-amber-600 hidden">有未儲存變更</span>
-    </div>
-
-    <!-- GitHub 設定區 -->
-    <div id="gh-panel" class="hidden p-4 bg-white rounded-xl border">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-base font-semibold">上傳設定</div>
-        <button id="btn-upload-close" class="text-sm text-slate-500 hover:underline">隱藏</button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-        <div>
-          <label class="block text-sm font-medium mb-1">Owner</label>
-          <input id="gh-owner" class="w-full border rounded px-2 py-1" placeholder="your-org-or-user">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Repo</label>
-          <input id="gh-repo" class="w-full border rounded px-2 py-1" placeholder="your-repo">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Branch</label>
-          <input id="gh-branch" class="w-full border rounded px-2 py-1" value="main">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Path</label>
-          <input id="gh-path" class="w-full border rounded px-2 py-1" value="news.json">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">GitHub Token</label>
-          <div class="relative">
-            <input id="gh-token" type="password" class="w-full border rounded px-2 py-1 pr-10" placeholder="ghp_xxx">
-            <button type="button" id="toggle-token"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline">顯示</button>
-          </div>
-        </div>
-      </div>
-      <div class="mt-3 flex items-center gap-3">
-        <label class="inline-flex items-center gap-2 text-sm">
-          <input id="remember-settings" type="checkbox" class="border rounded"> 記住設定（不含 Token）
+<span class="ml-2 text-xs text-amber-600 hidden" id="dirty-ind">有未儲存變更</span>
+</div>
+<!-- GitHub 設定區 -->
+<div class="hidden p-4 bg-white rounded-xl border" id="gh-panel">
+<div class="flex items-center justify-between mb-3">
+<div class="text-base font-semibold">上傳設定</div>
+<button class="text-sm text-slate-500 hover:underline" id="btn-upload-close">隱藏</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+<div>
+<label class="block text-sm font-medium mb-1">Owner</label>
+<input class="w-full border rounded px-2 py-1" id="gh-owner" placeholder="your-org-or-user"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Repo</label>
+<input class="w-full border rounded px-2 py-1" id="gh-repo" placeholder="your-repo"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Branch</label>
+<input class="w-full border rounded px-2 py-1" id="gh-branch" value="main"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Path</label>
+<input class="w-full border rounded px-2 py-1" id="gh-path" value="news.json"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">GitHub Token</label>
+<div class="relative">
+<input class="w-full border rounded px-2 py-1 pr-10" id="gh-token" placeholder="ghp_xxx" type="password"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline" id="toggle-token" type="button">顯示</button>
+</div>
+</div>
+</div>
+<div class="mt-3 flex items-center gap-3">
+<label class="inline-flex items-center gap-2 text-sm">
+<input class="border rounded" id="remember-settings" type="checkbox"/> 記住設定（不含 Token）
         </label>
-        <button id="btn-upload" class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500">執行上傳</button>
-        <span id="gh-status" class="text-sm text-slate-500"></span>
-      </div>
-    </div>
-
-    <!-- 📘 使用教學面板（可收合） -->
-    <details id="guide-panel" class="p-4 bg-white rounded-xl border">
-      <summary class="cursor-pointer text-base font-semibold text-blue-700">
+<button class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500" id="btn-upload">執行上傳</button>
+<span class="text-sm text-slate-500" id="gh-status"></span>
+</div>
+</div>
+<!-- 📘 使用教學面板（可收合） -->
+<details class="p-4 bg-white rounded-xl border" id="guide-panel">
+<summary class="cursor-pointer text-base font-semibold text-blue-700">
         📘 使用說明與 HTML 編輯教學（點我展開）
       </summary>
-
-      <div class="mt-4 space-y-6 text-sm leading-6 text-slate-700">
-        <!-- Summary 教學 -->
-        <section>
-          <h3 class="font-semibold text-slate-900 mb-1">▶ 主內容 Summary 使用方式</h3>
-          <p class="mb-2">主內容可切換<strong>[純文字]</strong>或<strong>[HTML]</strong>模式，用來建立段落、粗體、換行或顏色。</p>
-          <div class="rounded border bg-slate-50 p-3 text-xs space-y-1">
-            <div>範例：</div>
-            <div>&lt;b&gt;粗體文字&lt;/b&gt;</div>
-            <div>&lt;i&gt;斜體文字&lt;/i&gt;</div>
-            <div>&lt;u&gt;底線文字&lt;/u&gt;</div>
-            <div>&lt;br&gt; ← 換行</div>
-            <div>&lt;span style="color:#e60000"&gt;紅色提醒文字&lt;/span&gt;</div>
-            <div>&lt;span style="font-size:18px"&gt;放大文字 18px&lt;/span&gt;</div>
-            <div>&lt;span style="text-align:center;display:block"&gt;置中內容&lt;/span&gt;</div>
-          </div>
-          <p class="mt-1 text-amber-700 text-xs">安全性：系統會自動移除危險標籤（如 <code>&lt;script&gt;</code>）。</p>
-        </section>
-
-        <!-- Bullets 教學 -->
-        <section>
-          <h3 class="font-semibold text-slate-900 mb-1">▶ 展開內容 Bullets 使用方式</h3>
-          <p class="mb-2">每行代表一個項目列（會自動變成「•」符號）。也支援 HTML！</p>
-          <div class="rounded border bg-slate-50 p-3 text-xs space-y-1">
-            <div>範例：</div>
-            <div>&lt;b&gt;活動時間&lt;/b&gt;：即日起至 3/30</div>
-            <div>&lt;span style="color:#16a34a"&gt;✅ 全館免運&lt;/span&gt;</div>
-            <div>&lt;span style="color:#e11d48"&gt;⚠ 數量有限，售完為止&lt;/span&gt;</div>
-          </div>
-        </section>
-
-        <!-- 色票 -->
-        <section>
-          <h3 class="font-semibold text-slate-900 mb-2">▶ 常用顏色表（點一下自動複製 HEX 色碼）</h3>
-          <details class="rounded border bg-slate-50">
-            <summary class="cursor-pointer px-3 py-2">🎨 展開色票</summary>
-            <div class="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
-              <!-- 色票按鈕 -->
-              <button class="swatch border rounded overflow-hidden" data-hex="#000000">
-                <div style="background:#000000;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Black</span><code>#000000</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#FFFFFF">
-                <div style="background:#FFFFFF;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>White</span><code>#FFFFFF</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#EF4444">
-                <div style="background:#EF4444;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Red</span><code>#EF4444</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#F97316">
-                <div style="background:#F97316;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Orange</span><code>#F97316</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#F59E0B">
-                <div style="background:#F59E0B;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Amber</span><code>#F59E0B</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#22C55E">
-                <div style="background:#22C55E;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Green</span><code>#22C55E</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#3B82F6">
-                <div style="background:#3B82F6;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Blue</span><code>#3B82F6</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#A855F7">
-                <div style="background:#A855F7;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Purple</span><code>#A855F7</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#EC4899">
-                <div style="background:#EC4899;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Pink</span><code>#EC4899</code></div>
-              </button>
-              <button class="swatch border rounded overflow-hidden" data-hex="#64748B">
-                <div style="background:#64748B;height:28px;"></div>
-                <div class="p-1 flex justify-between"><span>Slate</span><code>#64748B</code></div>
-              </button>
-            </div>
-            <p class="text-slate-500 px-3 pb-2">提示：可用於 <code>&lt;span style="color:#HEX"&gt;</code></p>
-          </details>
-        </section>
-      </div>
-    </details>
-
-    <!-- Items Container -->
-    <div id="items" class="space-y-6"></div>
-
-  </div> <!-- end wrapper -->
-
-  <!-- 單筆 Item 模板 -->
-  <template id="item-tpl">
-    <div class="p-4 bg-white rounded-xl border shadow-sm">
-      <div class="flex items-start justify-between">
-        <h2 class="text-lg font-semibold">公告項目</h2>
-        <button class="btn-remove text-red-600 text-sm hover:underline">刪除這筆</button>
-      </div>
-
-      <!-- 基本欄位 -->
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div>
-          <label class="block text-sm font-medium mb-1">ID（唯一）</label>
-          <input class="f-id w-full border rounded px-2 py-1" placeholder="ann-20250101">
-          <p class="text-xs text-slate-500">小寫英文、數字、- 組成</p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">類型 type</label>
-          <select class="f-type w-full border rounded px-2 py-1">
-            <option value="announce">announce</option>
-            <option value="promo">promo</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 mt-6">
-          <label class="inline-flex items-center gap-2">
-            <input type="checkbox" class="f-pinned"> <span class="text-sm">置頂</span>
-          </label>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Badge 標籤（可空）</label>
-          <input class="f-badge w-full border rounded px-2 py-1" placeholder="HOT / NEW">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">標題 title</label>
-          <input class="f-title w-full border rounded px-2 py-1" placeholder="公告標題">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Period（日期顯示用字串）</label>
-          <input class="f-period w-full border rounded px-2 py-1" placeholder="2025/02/01 - 2025/02/20">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">開始日期（start）</label>
-          <input type="date" class="f-start w-full border rounded px-2 py-1">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">結束日期（end）</label>
-          <input type="date" class="f-end w-full border rounded px-2 py-1">
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">展開按鈕文字</label>
-          <input class="f-summary-btn w-full border rounded px-2 py-1" placeholder="查看內容">
-        </div>
-      </div>
-
-      <!-- Summary + Bullets -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <!-- Summary -->
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-sm font-medium">主內容 Summary</label>
-            <select class="f-summary-format border rounded px-2 py-1 text-sm">
-              <option value="text">純文字</option>
-              <option value="html">HTML 格式</option>
-            </select>
-          </div>
-          <textarea class="f-summary w-full border rounded px-2 py-2 h-28"
-            placeholder="支援換行、粗體、顏色..."></textarea>
-        </div>
-
-        <!-- Bullets（支援 HTML） -->
-        <div>
-          <label class="block text-sm font-medium mb-1">展開內容 Bullets（每行一項）</label>
-          <textarea class="f-bullets w-full border rounded px-2 py-2 h-28"
-            placeholder="每一行會是一個小圓點項目
-支援 <b></b> <br> <span style='color:red'></span>"></textarea>
-        </div>
-      </div>
-
-      <!-- CTA -->
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">CTA 顯示文字</label>
-          <input class="f-cta-text w-full border rounded px-2 py-1" placeholder="了解更多">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium mb-1">CTA 連結網址</label>
-          <input class="f-cta-href w-full border rounded px-2 py-1" placeholder="https://example.com">
-        </div>
-      </div>
-
-      <!-- 預覽 -->
-      <div class="mt-6 border rounded p-4 bg-slate-50">
-        <h3 class="text-sm text-slate-500 mb-2">預覽（前台呈現方式模擬）</h3>
-        <div class="preview-card text-sm text-slate-800"></div>
-      </div>
-    </div>
-  </template>
-
-  <script>
+<div class="mt-4 space-y-6 text-sm leading-6 text-slate-700">
+<!-- Summary 教學 -->
+<section>
+<h3 class="font-semibold text-slate-900 mb-1">▶ 主內容 Summary 使用方式</h3>
+<p class="mb-2">主內容可切換<strong>[純文字]</strong>或<strong>[HTML]</strong>模式，用來建立段落、粗體、換行或顏色。</p>
+<div class="rounded border bg-slate-50 p-3 text-xs space-y-1">
+<div>範例：</div>
+<div>&lt;b&gt;粗體文字&lt;/b&gt;</div>
+<div>&lt;i&gt;斜體文字&lt;/i&gt;</div>
+<div>&lt;u&gt;底線文字&lt;/u&gt;</div>
+<div>&lt;br&gt; ← 換行</div>
+<div>&lt;span style="color:#e60000"&gt;紅色提醒文字&lt;/span&gt;</div>
+<div>&lt;span style="font-size:18px"&gt;放大文字 18px&lt;/span&gt;</div>
+<div>&lt;span style="text-align:center;display:block"&gt;置中內容&lt;/span&gt;</div>
+</div>
+<p class="mt-1 text-amber-700 text-xs">安全性：系統會自動移除危險標籤（如 <code>&lt;script&gt;</code>）。</p>
+</section>
+<!-- Bullets 教學 -->
+<section>
+<h3 class="font-semibold text-slate-900 mb-1">▶ 展開內容 Bullets 使用方式</h3>
+<p class="mb-2">每行代表一個項目列（會自動變成「•」符號）。也支援 HTML！</p>
+<div class="rounded border bg-slate-50 p-3 text-xs space-y-1">
+<div>範例：</div>
+<div>&lt;b&gt;活動時間&lt;/b&gt;：即日起至 3/30</div>
+<div>&lt;span style="color:#16a34a"&gt;✅ 全館免運&lt;/span&gt;</div>
+<div>&lt;span style="color:#e11d48"&gt;⚠ 數量有限，售完為止&lt;/span&gt;</div>
+</div>
+</section>
+<!-- 色票 -->
+<section>
+<h3 class="font-semibold text-slate-900 mb-2">▶ 常用顏色表（點一下自動複製 HEX 色碼）</h3>
+<details class="rounded border bg-slate-50">
+<summary class="cursor-pointer px-3 py-2">🎨 展開色票</summary>
+<div class="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+<!-- 色票按鈕 -->
+<button class="swatch border rounded overflow-hidden" data-hex="#000000">
+<div style="background:#000000;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Black</span><code>#000000</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#FFFFFF">
+<div style="background:#FFFFFF;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>White</span><code>#FFFFFF</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#EF4444">
+<div style="background:#EF4444;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Red</span><code>#EF4444</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#F97316">
+<div style="background:#F97316;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Orange</span><code>#F97316</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#F59E0B">
+<div style="background:#F59E0B;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Amber</span><code>#F59E0B</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#22C55E">
+<div style="background:#22C55E;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Green</span><code>#22C55E</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#3B82F6">
+<div style="background:#3B82F6;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Blue</span><code>#3B82F6</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#A855F7">
+<div style="background:#A855F7;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Purple</span><code>#A855F7</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#EC4899">
+<div style="background:#EC4899;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Pink</span><code>#EC4899</code></div>
+</button>
+<button class="swatch border rounded overflow-hidden" data-hex="#64748B">
+<div style="background:#64748B;height:28px;"></div>
+<div class="p-1 flex justify-between"><span>Slate</span><code>#64748B</code></div>
+</button>
+</div>
+<p class="text-slate-500 px-3 pb-2">提示：可用於 <code>&lt;span style="color:#HEX"&gt;</code></p>
+</details>
+</section>
+</div>
+</details>
+<!-- Items Container -->
+<div class="space-y-6" id="items"></div>
+</div> <!-- end wrapper -->
+<!-- 單筆 Item 模板 -->
+<template id="item-tpl">
+<div class="p-4 bg-white rounded-xl border shadow-sm">
+<div class="flex items-start justify-between">
+<h2 class="text-lg font-semibold">公告項目</h2>
+<button class="btn-remove text-red-600 text-sm hover:underline">刪除這筆</button>
+</div>
+<!-- 基本欄位 -->
+<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+<div>
+<label class="block text-sm font-medium mb-1">ID（唯一）</label>
+<input class="f-id w-full border rounded px-2 py-1" placeholder="ann-20250101" required="required"/>
+<p class="text-xs text-slate-500">小寫英文、數字、- 組成</p>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">類型 type</label>
+<select class="f-type w-full border rounded px-2 py-1">
+<option value="announce">announce</option>
+<option value="promo">promo</option>
+</select>
+</div>
+<div class="flex items-center gap-2 mt-6">
+<label class="inline-flex items-center gap-2">
+<input class="f-pinned" type="checkbox"/> <span class="text-sm">置頂</span>
+</label>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Badge 標籤（可空）</label>
+<input class="f-badge w-full border rounded px-2 py-1" placeholder="HOT / NEW"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">標題 title</label>
+<input class="f-title w-full border rounded px-2 py-1" placeholder="公告標題" required="required"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Period（日期顯示用字串）</label>
+<input class="f-period w-full border rounded px-2 py-1" placeholder="2025/02/01 - 2025/02/20"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">開始日期（start）</label>
+<input class="f-start w-full border rounded px-2 py-1" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">結束日期（end）</label>
+<input class="f-end w-full border rounded px-2 py-1" type="date"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">展開按鈕文字</label>
+<input class="f-summary-btn w-full border rounded px-2 py-1" placeholder="查看內容"/>
+</div>
+</div>
+<!-- Summary + Bullets -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Summary -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="block text-sm font-medium">主內容 Summary</label>
+<select class="f-summary-format border rounded px-2 py-1 text-sm">
+<option value="text">純文字</option>
+<option value="html">HTML 格式</option>
+</select>
+</div>
+<textarea class="f-summary w-full border rounded px-2 py-2 h-28" placeholder="支援換行、粗體、顏色..."></textarea>
+</div>
+<!-- Bullets（支援 HTML） -->
+<div>
+<label class="block text-sm font-medium mb-1">展開內容 Bullets（每行一項）</label>
+<textarea class="f-bullets w-full border rounded px-2 py-2 h-28" placeholder="每一行會是一個小圓點項目
+支援 &lt;b&gt;&lt;/b&gt; &lt;br&gt; &lt;span style='color:red'&gt;&lt;/span&gt;"></textarea>
+</div>
+</div>
+<!-- CTA -->
+<div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="block text-sm font-medium mb-1">CTA 顯示文字</label>
+<input class="f-cta-text w-full border rounded px-2 py-1" placeholder="了解更多"/>
+</div>
+<div class="md:col-span-2">
+<label class="block text-sm font-medium mb-1">CTA 連結網址</label>
+<input class="f-cta-href w-full border rounded px-2 py-1" placeholder="https://example.com"/>
+</div>
+</div>
+<!-- 預覽 -->
+<div class="mt-6 border rounded p-4 bg-slate-50">
+<h3 class="text-sm text-slate-500 mb-2">預覽（前台呈現方式模擬）</h3>
+<div class="preview-card text-sm text-slate-800"></div>
+</div>
+</div>
+</template>
+<script>
     // -----------------------------
     // 狀態
     // -----------------------------
@@ -373,57 +340,73 @@
     // 渲染 Items
     // -----------------------------
     function renderItems() {
-      elItems.innerHTML = '';
-      items.forEach((item, idx) => {
-        const tpl = document.getElementById('item-tpl');
-        const node = tpl.content.cloneNode(true);
-        const q = sel => node.querySelector(sel);
+  elItems.innerHTML = '';
+  items.forEach((item, idx) => {
+    const tpl = document.getElementById('item-tpl');
+    const node = tpl.content.cloneNode(true);
+    const q = sel => node.querySelector(sel);
 
-        // 刪除
-        q('.btn-remove').addEventListener('click', () => {
-          if (confirm('確定要刪除這筆資料？')) {
-            items.splice(idx, 1);
-            expandState.delete(item.id);
-            renderItems();
-            setDirty();
-          }
-        });
+    // 刪除
+    q('.btn-remove').addEventListener('click', () => {
+      if (confirm('確定要刪除這筆資料？')) {
+        items.splice(idx, 1);
+        expandState.delete(item.id);
+        renderItems();
+        setDirty();
+      }
+    });
 
-        // 填入資料
-        q('.f-id').value = item.id;
-        q('.f-type').value = item.type || 'announce';
-        q('.f-pinned').checked = !!item.pinned;
-        q('.f-badge').value = item.badge || '';
-        q('.f-title').value = item.title || '';
-        q('.f-period').value = item.period || '';
-        q('.f-start').value = item.startsAt || '';
-        q('.f-end').value = item.endsAt || '';
-        q('.f-summary-btn').value = item.summaryButtonText || '查看內容';
-        q('.f-summary').value = item.summary || '';
-        q('.f-summary-format').value = item.summaryFormat || 'text';
-        q('.f-bullets').value = (item.bullets || []).join('\n');
+    // 填入資料
+    q('.f-id').value = item.id;
+    q('.f-type').value = item.type || 'announce';
+    q('.f-pinned').checked = !!item.pinned;
+    q('.f-badge').value = item.badge || '';
+    q('.f-title').value = item.title || '';
+    q('.f-period').value = item.period || '';
+    q('.f-start').value = item.startsAt || '';
+    q('.f-end').value = item.endsAt || '';
+    q('.f-summary-btn').value = item.summaryButtonText || '查看內容';
+    q('.f-summary').value = item.summary || '';
+    q('.f-summary-format').value = item.summaryFormat || 'text';
+    q('.f-bullets').value = (item.bullets || []).join('\n');
+    q('.f-cta-text').value = item.cta?.text || '';
+    q('.f-cta-href').value = item.cta?.href || '';
 
-        // 綁事件
-        q('.f-id').addEventListener('input', e => { item.id = e.target.value.trim(); setDirty(); });
-        q('.f-type').addEventListener('change', e => { item.type = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-pinned').addEventListener('change', e => { item.pinned = e.target.checked; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-badge').addEventListener('input', e => { item.badge = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-title').addEventListener('input', e => { item.title = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-period').addEventListener('input', e => { item.period = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-start').addEventListener('change', e => { item.startsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-end').addEventListener('change', e => { item.endsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary-btn').addEventListener('input', e => { item.summaryButtonText = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary').addEventListener('input', e => { item.summary = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-summary-format').addEventListener('change', e => { item.summaryFormat = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
-        q('.f-bullets').addEventListener('input', e => {
-          item.bullets = e.target.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-          setDirty(); renderPreview(elItems.lastElementChild || elItems, item);
-        });
+    // 綁事件
+    q('.f-id').addEventListener('input', e => { item.id = e.target.value.trim(); setDirty(); });
+    q('.f-type').addEventListener('change', e => { item.type = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-pinned').addEventListener('change', e => { item.pinned = e.target.checked; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-badge').addEventListener('input', e => { item.badge = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-title').addEventListener('input', e => { item.title = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-period').addEventListener('input', e => { item.period = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-start').addEventListener('change', e => { item.startsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-end').addEventListener('change', e => { item.endsAt = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-summary-btn').addEventListener('input', e => { item.summaryButtonText = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-summary').addEventListener('input', e => { item.summary = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-summary-format').addEventListener('change', e => { item.summaryFormat = e.target.value; setDirty(); renderPreview(elItems.lastElementChild || elItems, item); });
+    q('.f-bullets').addEventListener('input', e => {
+      item.bullets = e.target.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      setDirty(); renderPreview(elItems.lastElementChild || elItems, item);
+    });
 
-        elItems.appendChild(node);
-        renderPreview(elItems.lastElementChild, item);
-      });
-    }
+    q('.f-cta-text').addEventListener('input', e => {
+      item.cta = item.cta || {};
+      item.cta.text = e.target.value;
+      setDirty();
+      renderPreview(elItems.lastElementChild || elItems, item);
+    });
+
+    q('.f-cta-href').addEventListener('input', e => {
+      item.cta = item.cta || {};
+      item.cta.href = e.target.value;
+      setDirty();
+      renderPreview(elItems.lastElementChild || elItems, item);
+    });
+
+    elItems.appendChild(node);
+    renderPreview(elItems.lastElementChild, item);
+  });
+}
 
     // 預覽卡片（S2 藍色按鈕展開、E1 展開區塊、按鈕文字依 summaryButtonText）
     function renderPreview(hostEl, item) {
