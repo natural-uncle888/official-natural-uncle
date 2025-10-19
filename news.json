@@ -1,5 +1,23 @@
 [
   {
+    "id": "ann-2f3fafc1-2da8-46aa-a750-d4b0c5173668",
+    "type": "announce",
+    "pinned": false,
+    "badge": "",
+    "title": "",
+    "period": "",
+    "startsAt": "",
+    "endsAt": "",
+    "summaryButtonText": "查看內容",
+    "summaryFormat": "text",
+    "summary": "",
+    "bullets": [],
+    "cta": {
+      "text": "",
+      "href": ""
+    }
+  },
+  {
     "id": "ann-73ae6ace-81b4-4f56-8561-f801687e343f",
     "type": "announce",
     "pinned": true,
