@@ -15,14 +15,16 @@ export async function handler(event) {
     const params = new URLSearchParams(event.queryStringParameters || {});
     const folder = params.get("folder") || "collages"; // e.g. works/collages
     const perPage = parseInt(params.get("perPage") || "3", 10);
-    const nextCursor = params.get("next") || null;
+    
+    const maxResults = parseInt(params.get("max_results") || "300", 10); // default increased
+const nextCursor = params.get("next") || null;
 
     // Build Cloudinary Search request
     const url = `https://api.cloudinary.com/v1_1/${cloud}/resources/search`;
     const body = {
-      expression: `resource_type:image AND folder=${folder}`,
+      expression: `resource_type:image AND folder:\"${folder}/*\"`,
       sort_by: [{ uploaded_at: "desc" }],
-      max_results: 50
+      max_results: maxResults
     };
     if (nextCursor) body.next_cursor = nextCursor;
 
@@ -51,15 +53,24 @@ export async function handler(event) {
       folder: r.folder || ""
     }));
 
-    // Randomize client payload every request
-    if (Array.isArray(items) && items.length > 0) {
-      // Fisher-Yates for unbiased shuffle
-      for (let i = items.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [items[i], items[j]] = [items[j], items[i]];
-      }
-      items = items.slice(0, Math.max(1, perPage || 3));
+    
+    // MIXED STRATEGY: prioritize newest items then random-sample from that recent pool
+    // Sort by uploaded_at desc (newest first)
+    items.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+
+    // Build a pool from the most recent N items to sample from.
+    const poolSize = Math.min(items.length, 200); // choose from the latest 200 (tunable)
+    let pool = items.slice(0, poolSize);
+
+    // Shuffle the pool (Fisher-Yates)
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
     }
+
+    // Take perPage samples from shuffled pool
+    items = pool.slice(0, Math.max(1, perPage || 3));
+}
 
     return {
       statusCode: 200,
