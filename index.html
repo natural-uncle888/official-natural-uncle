@@ -529,7 +529,7 @@ body.dark #offer-modal .offer-panel a,
     grid.innerHTML = items.map(it => `
       <div class="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
         <a href="${it.full}" target="_blank" rel="noopener">
-          <img src="${it.thumb}" alt="作品集" class="w-full h-64 object-cover" loading="lazy" />
+          <img src="${it.thumb}" alt="作品集" class="w-full h-auto object-contain" loading="lazy" />
         </a>
       </div>
     `).join('');
