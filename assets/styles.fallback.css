@@ -1,0 +1,30 @@
+
+/* Minimal fallback CSS to reduce dependency on CDN tailwind alert.
+   This is NOT a full Tailwind replacement. It provides some basic utility-like rules
+   used on the page so layout is reasonable until proper Tailwind build is used. */
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; padding:0; color:#111; background:#fff; }
+.max-w-6xl { max-width: 72rem; margin-left:auto; margin-right:auto; }
+.px-4 { padding-left:1rem; padding-right:1rem; }
+.py-3 { padding-top:0.75rem; padding-bottom:0.75rem; }
+.text-center { text-align:center; }
+.grid { display:grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0,1fr)); }
+.sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.gap-6 { gap:1.5rem; }
+.w-full { width:100%; }
+.h-64 { height:16rem; }
+.object-cover { object-fit: cover; }
+.rounded-lg { border-radius:0.5rem; }
+.shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.hover\:shadow-lg:hover { box-shadow: 0 10px 15px rgba(0,0,0,0.15); }
+.inline-block { display:inline-block; }
+.bg-blue-600 { background-color: #2563EB; color: #fff; }
+.text-whi { color: #fff; }
+.mt-6 { margin-top:1.5rem; }
+.mb-8 { margin-bottom:2rem; }
+.rounded-2xl { border-radius:1rem; }
+.border { border:1px solid #e5e7eb; }
+.p-5 { padding:1.25rem; }
+.text-2xl { font-size:1.5rem; }
+.font-bold { font-weight:700; }
