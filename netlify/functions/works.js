@@ -20,10 +20,18 @@ export async function handler(event) {
     const maxResults = parseInt(params.get("max_results") || "300", 10);
     const poolLimit = parseInt(params.get("pool_limit") || "200", 10); // how many newest to pool from
 
+    // If the caller specified a specific subfolder like "collages/900211" we will by default
+    // search the whole "collages" tree so that sampling is across all subfolders.
+    // If the caller includes a wildcard (e.g. "collages/*") we will respect it.
+    let searchFolder = folder;
+    if (!folder.includes('*') && folder.startsWith('collages/')) {
+      searchFolder = 'collages';
+    } // how many newest to pool from
+
     // Build Cloudinary Search request to include subfolders under `folder`
     const url = `https://api.cloudinary.com/v1_1/${cloud}/resources/search`;
     const body = {
-      expression: `resource_type:image AND folder:"${folder}/*"`,
+      expression: `resource_type:image AND folder:"${searchFolder}/*"`,
       sort_by: [{ uploaded_at: "desc" }],
       max_results: maxResults
     };
@@ -47,16 +55,24 @@ export async function handler(event) {
 
     const data = await res.json();
     const totalFound = data.total_count || (Array.isArray(data.resources) ? data.resources.length : 0);
-    let items = (data.resources || []).map(r => ({
-      id: r.public_id,
-      thumb: `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_480/${r.public_id}.${r.format}`,
-      full:  `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_1600/${r.public_id}.${r.format}`,
-      uploaded_at: r.created_at,
-      tags: r.tags || [],
-      folder: r.folder || ""
-    }));
+    let items = (data.resources || []).map(r => {
+      // derive folder from r.folder if present, otherwise from public_id
+      let folderVal = (r.folder && String(r.folder).trim()) ? r.folder : "";
+      if (!folderVal && r.public_id && r.public_id.includes("/")) {
+        const parts = r.public_id.split("/");
+        folderVal = parts.slice(0, parts.length - 1).join("/");
+      }
 
-    // Mixed Strategy:
+      return {
+        id: r.public_id,
+        thumb: `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_480/${r.public_id}.${r.format}`,
+        full:  `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_1600/${r.public_id}.${r.format}`,
+        uploaded_at: r.created_at,
+        tags: r.tags || [],
+        folder: folderVal
+      };
+    });
+// Mixed Strategy:
     // 1) sort by uploaded_at desc (newest first)
     // 2) take newest poolLimit items into a pool
     // 3) shuffle pool and sample perPage items
