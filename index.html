@@ -175,7 +175,7 @@
     .fab-top{bottom:calc(9rem + env(safe-area-inset-bottom,0px));width:48px;height:48px;background:#0ea5e9;color:#fff;font-size:1.25rem}
     @media (max-width:767.98px){ .fab-top{bottom:calc(9.5rem + env(safe-area-inset-bottom,0px))} }
 
-    /* ★ 關鍵：LINE 預約按鈕（獨立懸浮）維持一致比例 */
+    /* ★ 關鍵：LINE 預約／詢價按鈕（獨立懸浮）維持一致比例 */
     .fab-book{
       bottom:calc(1rem + env(safe-area-inset-bottom,0px));
       min-width:48px;
@@ -360,7 +360,7 @@
 .btn-success{ background:#10b981; color:#fff; }
 .btn-success:hover{ background:#059669; }
 </style><style>
-/* Dark mode hard override for 清洗前後拼貼｜精選 */
+/* Dark mode hard override for 清洗成果｜前後對比精選 */
 @media (prefers-color-scheme: dark) {
   #works-teaser { background-color:#0f0f0f !important; color:#f5f5f5 !important; }
   #works-teaser h1, #works-teaser h2, #works-teaser h3,
@@ -431,14 +431,27 @@ body.dark #offer-modal .offer-panel a,
 <a href="pricing.html">價格細項</a>
 <a href="#process">施工流程</a>
 <a href="#ac-sop">冷氣SOP</a>
-<a href="#cases">工作日誌</a>
+<a href="#works-teaser">清洗成果</a>
 <a href="#faq">常見問題</a>
 <a href="#contact">聯絡預約</a>
 </nav>
-<a class="hidden md:inline-flex btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 諮詢</a>
+<a class="hidden md:inline-flex btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 預約／詢價</a>
 </div>
 </header>
 <!-- Hero -->
+<section class="relative bg-gradient-to-b from-sky-50 to-white">
+<div class="max-w-6xl mx-auto px-4 py-14 text-center">
+<h1 class="text-3xl md:text-5xl font-extrabold">冷氣・洗衣機・水塔・自來水管 到府專業清洗</h1>
+<p class="mt-4 text-lg muted">透明價格｜完工保固｜環保清潔劑｜可開立發票</p>
+<div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+<a class="btn btn-ghost" href="tel:+886912356331">一鍵撥打</a>
+<a class="btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 預約／詢價</a>
+</div>
+<ul class="mt-6 flex flex-wrap gap-3 justify-center text-sm muted">
+<li>累積服務 2,000+ 台</li><li>到府 1–3 小時完工</li><li>設備保護與現場防護處理</li>
+</ul>
+</div>
+</section>
 <section class="max-w-5xl mx-auto px-4 my-10" id="news">
 <div class="rounded-xl border border-amber-300 bg-amber-50/80 shadow-sm">
 <div class="flex items-center gap-3 px-5 py-3 border-b border-amber-200 bg-amber-100 rounded-t-xl">
@@ -447,19 +460,6 @@ body.dark #offer-modal .offer-panel a,
 <span class="ml-auto inline-block text-xs px-2 py-0.5 rounded bg-amber-600 text-white">NEW</span>
 </div>
 <div class="p-5 space-y-4" id="news-list"></div>
-</div>
-</section>
-<section class="relative bg-gradient-to-b from-sky-50 to-white">
-<div class="max-w-6xl mx-auto px-4 py-14 text-center">
-<h1 class="text-3xl md:text-5xl font-extrabold">冷氣・洗衣機・水塔・自來水管 到府專業清洗</h1>
-<p class="mt-4 text-lg muted">透明價格｜完工保固｜環保清潔劑｜可開立發票</p>
-<div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-<a class="btn btn-ghost" href="tel:+886912356331">一鍵撥打</a>
-<a class="btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 立即預約</a>
-</div>
-<ul class="mt-6 flex flex-wrap gap-3 justify-center text-sm muted">
-<li>累積服務 2,000+ 台</li><li>到府 1–3 小時完工</li><li>設備保護與現場防護處理</li>
-</ul>
 </div>
 </section>
 <!-- 服務項目 -->
@@ -498,7 +498,7 @@ body.dark #offer-modal .offer-panel a,
 <th class="py-3">項目</th><th>基本價格</th><th>加購/加價</th><th>備註</th><th class="sr-only">細項</th></tr></thead>
 <tbody>
 <tr class="border-b"><td class="py-3">冷氣（分離式/台）</td><td>$1,500 起<span class="ml-2 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">三台以上／每台 $1,500</span></td><td>加大加長款、特殊機款</td><td>含防護與清潔劑</td><td><a aria-label="查看冷氣清洗價格細項" class="btn btn-ghost py-2 px-3 text-xs" href="pricing.html#ac">細項</a></td></tr>
-<tr class="border-b"><td class="py-3">洗衣機（直立式）</td><td>$2,000 起</td><td>螺帽更換時</td><td>全機拆洗殺菌</td><td><a aria-label="查看洗衣機清洗價格細項" class="btn btn-ghost py-2 px-3 text-xs" href="pricing.html#wm">細項</a></td></tr>
+<tr class="border-b"><td class="py-3">洗衣機（直立式）</td><td>$2,000 起</td><td>螺帽更換時</td><td>全機拆洗</td><td><a aria-label="查看洗衣機清洗價格細項" class="btn btn-ghost py-2 px-3 text-xs" href="pricing.html#wm">細項</a></td></tr>
 <tr class="border-b"><td class="py-3">家用水塔</td><td>$1,000 起</td><td>大容量∕放置高危險</td><td>附清洗照片</td><td><a aria-label="查看水塔清洗價格細項" class="btn btn-ghost py-2 px-3 text-xs" href="pricing.html#tank">細項</a></td></tr>
 <tr><td class="py-3">自來水管</td><td>$3,200 起</td><td>多重管線</td><td>改善黃水/水壓</td><td><a aria-label="查看自來水管清洗價格細項" class="btn btn-ghost py-2 px-3 text-xs" href="pricing.html#pipe">細項</a></td></tr>
 </tbody>
@@ -511,7 +511,7 @@ body.dark #offer-modal .offer-panel a,
 <!-- 施工流程 + 到府前準備 -->
 <section class="py-12" id="works-teaser">
 <div class="max-w-6xl mx-auto px-4">
-<h2 class="text-2xl md:text-3xl font-bold text-center mb-8">清洗前後拼貼｜精選</h2>
+<h2 class="text-2xl md:text-3xl font-bold text-center mb-8">清洗成果｜前後對比精選</h2>
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="works-grid"></div>
 <div class="text-center mt-6">
 <a class="inline-block px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition" href="https://unclecollage.netlify.app/gallery.html" rel="noopener" target="_blank">
@@ -534,7 +534,7 @@ body.dark #offer-modal .offer-panel a,
       </div>
     `).join('');
   } catch (e) {
-    grid.innerHTML = `<p class="text-center text-gray-600">暫無作品</p>`;
+    grid.innerHTML = `<p class="text-center text-gray-600">暫無照片</p>`;
   }
 })();
 </script>
@@ -672,13 +672,13 @@ body.dark #offer-modal .offer-panel a,
 <!-- 行動版浮動快速按鈕 -->
 <div class="fixed bottom-4 right-4 flex flex-col gap-2 md:hidden mobile-fab">
 <a class="btn btn-ghost" href="tel:+886912356331">撥打電話</a>
-<a class="btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 諮詢</a>
+<a class="btn btn-line" href="https://line.me/R/ti/p/@uncle888">LINE 預約／詢價</a>
 </div>
 <!-- 深/淺色切換（可拖曳） -->
 <button aria-label="切換深淺色" aria-pressed="false" class="theme-toggle" id="themeToggle">🌙</button>
-<!-- 浮動按鈕（返回頂部 + LINE 預約） -->
+<!-- 浮動按鈕（返回頂部 + LINE 預約／詢價） -->
 <a aria-label="返回頂部" class="fab fab-top is-hidden" href="#top" id="backTop" title="返回頂部">↑</a>
-<a aria-label="LINE 預約" class="fab fab-book" href="https://line.me/R/ti/p/@uncle888" title="LINE 預約">LINE 預約</a>
+<a aria-label="LINE 預約／詢價" class="fab fab-book" href="https://line.me/R/ti/p/@uncle888" title="LINE 預約／詢價">LINE 預約／詢價</a>
 <!-- 既有的功能腳本：主題、滾動動畫、拖曳等 -->
 <script>
     /* 年份自動更新 */
