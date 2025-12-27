@@ -25,7 +25,8 @@ export async function handler(event) {
     const body = {
       expression: `resource_type:image AND folder:"${searchFolder}/*"`,
       sort_by: [{ uploaded_at: "desc" }],
-      max_results: maxResults
+      max_results: maxResults,
+      with_field: ["context","metadata","tags"]
     };
 
     const auth = Buffer.from(`${key}:${secret}`).toString('base64');
@@ -54,8 +55,24 @@ export async function handler(event) {
         folderVal = parts.slice(0, parts.length - 1).join("/");
       }
 
+      // determine visibility (default visible unless explicitly false)
+      let rawVisible = undefined;
+      try {
+        if (r.context && r.context.custom && Object.prototype.hasOwnProperty.call(r.context.custom, 'visible')) {
+          rawVisible = r.context.custom.visible;
+        } else if (r.context && Object.prototype.hasOwnProperty.call(r.context, 'visible')) {
+          rawVisible = r.context.visible;
+        } else if (r.metadata && Object.prototype.hasOwnProperty.call(r.metadata, 'visible')) {
+          rawVisible = r.metadata.visible;
+        }
+      } catch (_) {}
+      const normFalse = (v) => (v === false || v === 0 || v === "0" || v === "false" || v === "False" || v === "FALSE");
+      const visible = !normFalse(rawVisible);
+
       return {
         id: r.public_id,
+        visible,
+
         thumb: `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_480/${r.public_id}.${r.format}`,
         full:  `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto,w_1600/${r.public_id}.${r.format}`,
         uploaded_at: r.created_at,
@@ -63,6 +80,9 @@ export async function handler(event) {
         folder: folderVal
       };
     });
+
+    // Filter: hide items with visible === false (default visible)
+    items = items.filter(it => it.visible !== false);
 
     // Mixed Strategy: take newest poolLimit, shuffle, sample perPage
     items.sort((a,b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));

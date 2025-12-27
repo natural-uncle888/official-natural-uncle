@@ -526,7 +526,8 @@ body.dark #offer-modal .offer-panel a,
   try {
     const res = await fetch('/.netlify/functions/works?folder=collages/900211&perPage=3');
     const { items=[] } = await res.json();
-    grid.innerHTML = items.map(it => `
+    const visibleItems = items.filter(it => it.visible !== false);
+    grid.innerHTML = visibleItems.map(it => `
       <div class="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
         <a href="${it.full}" target="_blank" rel="noopener">
           <img src="${it.thumb}" alt="作品集" class="w-full h-auto object-contain" loading="lazy" />
