@@ -1,5 +1,31 @@
 [
   {
+    "id": "ann-06613475-9309-4bd3-a827-7fd540c5dccb",
+    "type": "announce",
+    "pinned": true,
+    "badge": "HOT",
+    "title": "馬年春節服務公告",
+    "period": "2026/02/14－2026/02/22",
+    "startsAt": "2026-02-14",
+    "endsAt": "2026-02-23",
+    "summaryButtonText": "查看春節服務安排",
+    "summaryFormat": "html",
+    "summary": "<b>【公告】馬年春節服務安排</b><br>\n新年快樂！祝大家馬年<b>平安健康、闔家團圓、馬到成功</b> 🧧🐎<br><br>\n春節期間我們將<b>正常回覆訊息／受理詢價／安排預約</b>，歡迎先傳照片或簡述狀況，我們可先協助評估與安排。<br><br>\n<span style=\"color:#e11d48\"><b>初五開工</b></span>：恢復上班與排程處理<br>\n<span style=\"color:#16a34a\"><b>初六起</b></span>：開始提供<b>到府清洗服務</b>（冷氣／直立式洗衣機／水塔／自來水管）\n",
+    "bullets": [
+      "<b>春節期間（連假）</b>：<span style=\"color:#16a34a\"><b>正常回覆訊息／受理詢價／安排預約</b></span>（可先傳照片快速評估）",
+      "<b>初五（開工）</b>：正常上班，<b>繼續受理預約與排程</b>",
+      "<b>初六起（恢復施工）</b>：<span style=\"color:#16a34a\"><b>開始提供到府清洗服務</b></span>（冷氣／直立式洗衣機／水塔／自來水管）",
+      "<b>預約提醒</b>：春節前後較滿，建議<span style=\"color:#e11d48\"><b>提早預約</b></span>以免久候",
+      "<b>LINE 洽詢更快</b>：LINE 官方內有<b>價格一覽</b>；預約平台提供<b>完整 QA</b>，看完可直接預約更省時間",
+      "<b>聯絡方式</b>：LINE @uncle888｜電話 +886 912-356-331",
+      "<span style=\"text-align:center;display:block\"><b>再次祝您新年快樂、馬年行大運！</b></span>"
+    ],
+    "cta": {
+      "text": "💬 LINE 官方帳號",
+      "href": "https://lin.ee/OHk6Rn7"
+    }
+  },
+  {
     "id": "ann-1fb6cc86-704c-4845-b37f-200099926b8e",
     "type": "announce",
     "pinned": true,
