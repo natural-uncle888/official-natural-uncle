@@ -10,7 +10,7 @@
     "endsAt": "2026-05-31",
     "summaryButtonText": "查看內容",
     "summaryFormat": "html",
-    "summary": "<span style=\"text-align:center;display:block\">\n  <span style=\"font-size:18px\"><b>即將進入夏天｜清洗保養公告</b></span><br>\n  <span style=\"color:#666\">冷氣室內機／直立式洗衣機／家用水塔</span>\n</span>\n<br>\n夏季旺季前先把設備整理好，吹得涼、用得安心。<br>\n<span style=\"color:#e60000\"><b>提醒：</b>夏季為旺季，預約量較大，建議提早安排想要的時段。</span>",
+    "summary": "<span style=\"text-align:left;display:block\">\n  <span style=\"font-size:18px\"><b>即將進入夏天｜清洗保養公告</b></span><br>\n  <span style=\"color:#666\">冷氣室內機／直立式洗衣機／家用水塔</span><br>\n  <span style=\"color:#e60000\"><b>旺季提醒：</b>夏季預約量較大，建議提早安排想要的時段。</span>\n</span>",
     "bullets": [
       "<b>冷氣室內機</b>：除塵除霉、改善異味、提升冷房效率、降低過敏原",
       "<b>直立式洗衣機</b>：降低黴味/黑屑、減少汙垢殘留、改善洗淨力",
