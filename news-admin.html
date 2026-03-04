@@ -50,6 +50,10 @@
     details > summary::-webkit-details-marker { display:none; }
     .preview-article ul{ list-style: disc; padding-left: 1.2rem; }
     .preview-article li + li{ margin-top:.35rem; }
+  
+    /* Prevent Chrome autofill from pre-filling the search box (which would hide the list) */
+    @keyframes autofillStart { from {} to {} }
+    input:-webkit-autofill { animation-name: autofillStart; animation-duration: 0.01s; }
   </style>
 </head>
 <body class="min-h-screen">
@@ -109,7 +113,7 @@
           </div>
           <div class="flex items-center gap-2">
             <div class="relative">
-              <input id="q" name="newsSearch" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+              <input id="q" autocomplete="off" inputmode="search" aria-label="搜尋標題/Badge" autocapitalize="off" autocorrect="off" spellcheck="false"
                 class="w-52 rounded-xl border border-slate-200 px-3 py-2 pr-9 text-sm outline-none focus:ring-2 focus:ring-blue-200"
                 placeholder="搜尋標題/Badge">
               <button id="btnClearSearch" type="button"
@@ -623,6 +627,7 @@
 	    if(inlineClear){
 	      inlineClear.addEventListener('click', () => {
 	        const qEl = $('#q');
+	  let userTyped = false;
 	        if(qEl) qEl.value = '';
 	        const btn = $('#btnClearSearch');
 	        if(btn) btn.classList.add('hidden');
@@ -1254,12 +1259,15 @@
 
 	  // Search box (avoid browser autofill hiding the list)
 	  const qEl = $('#q');
+	  let userTyped = false;
 	  const btnClearSearch = $('#btnClearSearch');
 	  const syncClearSearch = () => {
 	    if(!btnClearSearch || !qEl) return;
 	    btnClearSearch.classList.toggle('hidden', !qEl.value);
 	  };
 	  if(qEl){
+	    qEl.addEventListener('keydown', () => { userTyped = true; });
+	    qEl.addEventListener('paste', () => { userTyped = true; });
 	    qEl.addEventListener('input', () => { syncClearSearch(); renderList(); });
 	  }
 	  if(btnClearSearch){
@@ -1269,6 +1277,27 @@
 	      renderList();
 	      qEl && qEl.focus();
 	    });
+	  }
+
+	  // Force empty default for the search box (Chrome may autofill it and hide the list)
+	  if(qEl){
+	    const clearAutofill = () => {
+	      if(userTyped) return;
+	      if((qEl.value || '').trim()){
+	        qEl.value = '';
+	        syncClearSearch();
+	        renderList();
+	      }
+	    };
+	    // Detect WebKit autofill
+	    qEl.addEventListener('animationstart', (e) => {
+	      if(e.animationName === 'autofillStart') clearAutofill();
+	    });
+	    // Extra safety: clear shortly after load (Chrome may fill after first paint)
+	    clearAutofill();
+	    setTimeout(clearAutofill, 60);
+	    setTimeout(clearAutofill, 350);
+	    setTimeout(clearAutofill, 900);
 	  }
 
   $('#btnJsonView').addEventListener('click', () => {
