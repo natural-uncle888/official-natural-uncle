@@ -108,7 +108,14 @@
             <div class="text-xs text-slate-500">點選公告 → 往下編輯 → 最下方預覽前台真實樣式</div>
           </div>
           <div class="flex items-center gap-2">
-            <input id="q" class="w-52 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="搜尋標題/Badge">
+            <div class="relative">
+              <input id="q" name="newsSearch" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                class="w-52 rounded-xl border border-slate-200 px-3 py-2 pr-9 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="搜尋標題/Badge">
+              <button id="btnClearSearch" type="button"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                title="清除搜尋">✕</button>
+            </div>
           </div>
         </div>
 
@@ -573,7 +580,8 @@
   // ---------- Rendering ----------
   function renderList(){
     const host = $('#list');
-    const q = ($('#q').value || '').trim().toLowerCase();
+	    const qRaw = ($('#q').value || '').trim();
+	    const q = qRaw.toLowerCase();
     const items = sortItems(state.items);
     $('#chipCount').textContent = `${items.length} 筆`;
 
@@ -581,7 +589,13 @@
       ? items.filter(it => (it.title||'').toLowerCase().includes(q) || (it.badge||'').toLowerCase().includes(q))
       : items;
 
-    host.innerHTML = filtered.map(it => {
+	    const emptyHtml = (items.length === 0)
+	      ? `<div class="p-4 text-sm text-slate-500">尚未載入任何公告。請先按上方 <b>載入伺服器</b> 或 <b>匯入 JSON</b>。</div>`
+	      : (qRaw
+	          ? `<div class="p-4 text-sm text-slate-600">沒有符合的公告（目前搜尋：<span class="mono">${escapeHtml(qRaw)}</span>）。<button class="btn btn-ghost text-sm ml-2" data-clear-search>清除搜尋</button></div>`
+	          : `<div class="p-4 text-sm text-slate-500">沒有符合的公告。</div>`);
+
+	    host.innerHTML = filtered.map(it => {
       const st = statusOf(it);
       const selected = it.id === state.selectedId;
       return `
@@ -602,7 +616,20 @@
           </div>
         </button>
       `;
-    }).join('') || `<div class="p-4 text-sm text-slate-500">沒有符合的公告。</div>`;
+	    }).join('') || emptyHtml;
+
+	    // when browser autofills search (or user types a wrong keyword), offer one-click clear
+	    const inlineClear = host.querySelector('[data-clear-search]');
+	    if(inlineClear){
+	      inlineClear.addEventListener('click', () => {
+	        const qEl = $('#q');
+	        if(qEl) qEl.value = '';
+	        const btn = $('#btnClearSearch');
+	        if(btn) btn.classList.add('hidden');
+	        renderList();
+	        qEl && qEl.focus();
+	      });
+	    }
 
     $$('#list [data-id]').forEach(btn => btn.addEventListener('click', () => selectById(btn.dataset.id)));
   }
@@ -1224,7 +1251,25 @@
   $('#btnDeleteConfirm').addEventListener('click', confirmDelete);
 
   $('#btnSort').addEventListener('click', () => { toast('目前固定：PIN → startsAt → title'); });
-  $('#q').addEventListener('input', renderList);
+
+	  // Search box (avoid browser autofill hiding the list)
+	  const qEl = $('#q');
+	  const btnClearSearch = $('#btnClearSearch');
+	  const syncClearSearch = () => {
+	    if(!btnClearSearch || !qEl) return;
+	    btnClearSearch.classList.toggle('hidden', !qEl.value);
+	  };
+	  if(qEl){
+	    qEl.addEventListener('input', () => { syncClearSearch(); renderList(); });
+	  }
+	  if(btnClearSearch){
+	    btnClearSearch.addEventListener('click', () => {
+	      if(qEl) qEl.value = '';
+	      syncClearSearch();
+	      renderList();
+	      qEl && qEl.focus();
+	    });
+	  }
 
   $('#btnJsonView').addEventListener('click', () => {
     const payload = sortItems(state.items).map(normalizeItem);
@@ -1257,6 +1302,12 @@
   }else{
     renderAll();
   }
+
+	  // Some browsers autofill inputs without firing input events.
+	  // If the search box is autofilled, it may filter out the whole list.
+	  // Re-sync once after paint.
+	  requestAnimationFrame(() => { try{ syncClearSearch(); renderList(); }catch(_){} });
+	  setTimeout(() => { try{ syncClearSearch(); renderList(); }catch(_){} }, 350);
 
   // warn on leave
   window.addEventListener('beforeunload', (e) => {
