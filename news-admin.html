@@ -21,7 +21,13 @@
       --red:#e60000;
       --shadow: 0 10px 25px rgba(2,6,23,.08);
     }
-    body{ background: var(--bg); color: var(--text); }
+    body{
+      background: radial-gradient(1100px 700px at 15% 10%, rgba(59,130,246,.10), transparent 55%),
+                  radial-gradient(900px 650px at 85% 20%, rgba(236,72,153,.10), transparent 55%),
+                  radial-gradient(900px 650px at 60% 95%, rgba(245,158,11,.10), transparent 55%),
+                  linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f1f5f9 100%);
+      color: var(--text);
+    }
     .chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.18rem .55rem; border-radius:999px; font-size:.75rem; border:1px solid var(--line); background:#fff; color:var(--muted); }
     .chip-dot{ width:.5rem; height:.5rem; border-radius:999px; background: var(--line); }
     .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.45rem; padding:.55rem .8rem; border-radius:.8rem; font-weight:700; font-size:.9rem; border:1px solid var(--line); background:#fff; box-shadow: 0 6px 16px rgba(2,6,23,.06); }
@@ -37,9 +43,9 @@
     .modal{ position:fixed; inset:0; z-index:70; display:none; }
     .modal.show{ display:block; }
     .modal .overlay{ position:absolute; inset:0; background:rgba(2,6,23,.55); }
-    .modal .panel{ position:relative; margin:6vh auto; width:min(980px, 94vw); background:#fff; border-radius:18px; border:1px solid var(--line); box-shadow: 0 25px 70px rgba(2,6,23,.35); overflow:hidden; }
+    .modal .panel{ position:relative; margin:6vh auto; width:min(980px, 94vw); background:#fff; border-radius:18px; border:1px solid var(--line); box-shadow: 0 25px 70px rgba(2,6,23,.35); overflow:hidden; max-height: calc(100vh - 80px); display:flex; flex-direction:column; }
     .modal .panel header{ padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .modal .panel .body{ padding:16px; }
+    .modal .panel .body{ padding:16px; overflow:auto; }
     .kbd{ font-size:.75rem; padding:.15rem .35rem; border:1px solid var(--line); border-bottom-width:2px; border-radius:.45rem; background:#fff; color:var(--muted); }
     details > summary::-webkit-details-marker { display:none; }
     .preview-article ul{ list-style: disc; padding-left: 1.2rem; }
@@ -54,7 +60,7 @@
     <div class="mx-auto max-w-[1400px] px-4 py-3 flex flex-wrap items-center gap-2 justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-2xl bg-white border border-slate-200 overflow-hidden grid place-items-center shadow-sm">
-          <img src="https://res.cloudinary.com/dijzndzw2/image/upload/v1757176751/logo-3_hddq08.png" alt="Natural‑Uncle" class="w-8 h-8 object-contain" loading="lazy" decoding="async">
+          <img src="logo-3.png" alt="Natural‑Uncle" class="w-8 h-8 object-contain" loading="lazy" decoding="async">
         </div>
         <div>
           <div class="font-black leading-tight">公告管理</div>
@@ -76,22 +82,33 @@
 
         <button class="btn" id="btnGithub"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 00-3.79 23.39c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.75-1.34-1.75-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.82 2.8 1.29 3.49.99.11-.77.42-1.29.76-1.58-2.67-.3-5.48-1.33-5.48-5.93 0-1.31.47-2.38 1.23-3.22-.12-.3-.53-1.52.12-3.16 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.65 1.64.24 2.86.12 3.16.76.84 1.23 1.91 1.23 3.22 0 4.61-2.82 5.62-5.5 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.58A12 12 0 0012 .5z"/></svg>一鍵上傳 GitHub</button>
 
+        <button class="btn" id="btnColors" title="常用顏色表">🎨 常用顏色表</button>
+
         <button class="btn btn-ghost" id="btnHelp" title="使用說明"><span class="kbd">?</span> 使用說明</button>
       </div>
     </div>
   </header>
 
+  <div id="envBanner" class="hidden border-b border-amber-200 bg-amber-50 text-amber-900">
+    <div class="mx-auto max-w-[1400px] px-4 py-2 text-sm flex flex-wrap items-center gap-2">
+      <span class="font-black">提示：</span>
+      <span>你目前用 <span class="mono">file://</span> 本機方式開啟，瀏覽器可能不允許直接讀取同資料夾的 <span class="mono">news.json</span>。建議改用 <b>匯入 JSON</b> 或用已部署網址開啟此頁。</span>
+      <button class="btn btn-ghost text-sm" id="btnPickLocalNews">直接選擇 news.json</button>
+    </div>
+  </div>
+
   <main class="mx-auto max-w-[1400px] px-4 py-5">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <!-- Left: list -->
-      <section class="soft lg:col-span-4 overflow-hidden">
-        <div class="p-4 border-b border-slate-200 flex items-center justify-between gap-2">
+    <div class="space-y-4">
+
+      <!-- 1) List (TOP) -->
+      <section class="soft overflow-hidden" id="secList">
+        <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div class="font-black">公告清單</div>
-            <div class="text-xs text-slate-500">點選左邊公告 → 右側編輯 → 右下預覽</div>
+            <div class="font-black">📌 公告清單</div>
+            <div class="text-xs text-slate-500">點選公告 → 往下編輯 → 最下方預覽前台真實樣式</div>
           </div>
           <div class="flex items-center gap-2">
-            <input id="q" class="w-44 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="搜尋標題/Badge">
+            <input id="q" class="w-52 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200" placeholder="搜尋標題/Badge">
           </div>
         </div>
 
@@ -100,17 +117,19 @@
           <button class="btn btn-ghost text-sm" id="btnSort">排序：PIN→日期</button>
           <button class="btn btn-ghost text-sm" id="btnDuplicate" title="複製目前公告">複製</button>
           <button class="btn btn-ghost text-sm text-red-700" id="btnDelete" title="刪除目前公告">刪除</button>
+          <div class="flex-1"></div>
+          <span class="text-xs text-slate-500">提示：清單可滾動</span>
         </div>
 
-        <div id="list" class="max-h-[70vh] overflow-auto divide-y divide-slate-100"></div>
+        <div id="list" class="max-h-[45vh] lg:max-h-[360px] overflow-auto divide-y divide-slate-100"></div>
       </section>
 
-      <!-- Right: editor -->
-      <section class="soft lg:col-span-8 overflow-hidden">
-        <div class="p-4 border-b border-slate-200 flex items-center justify-between gap-3">
+      <!-- 2) Editor (SECOND) -->
+      <section class="soft overflow-hidden" id="secEditor">
+        <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div class="font-black">編輯器</div>
-            <div class="text-xs text-slate-500">建議流程：<span class="font-semibold">載入伺服器</span> → 修改 → <span class="font-semibold">下載/上傳 GitHub</span></div>
+            <div class="font-black">✏️ 編輯內容</div>
+            <div class="text-xs text-slate-500">建議流程：<span class="font-semibold">載入伺服器</span> → 修改 → <span class="font-semibold">下載 / 上傳 GitHub</span></div>
           </div>
           <div class="flex items-center gap-2">
             <button class="btn" id="btnJsonView">JSON 檢視</button>
@@ -118,44 +137,29 @@
           </div>
         </div>
 
+        <!-- editor content is already 2-col (horizontal) on md+ -->
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4" id="editor">
           <!-- dynamic -->
         </div>
+      </section>
 
-        <div class="border-t border-slate-200 bg-slate-50 p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="soft p-4">
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <div class="font-black">前台預覽（單筆）</div>
-              <span class="text-xs text-slate-500">採用首頁相同卡片結構</span>
-            </div>
-            <div id="preview"></div>
+      <!-- 3) Preview (BOTTOM) -->
+      <section class="soft overflow-hidden" id="secPreview">
+        <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-slate-50">
+          <div>
+            <div class="font-black">👁️ 前台真實預覽</div>
+            <div class="text-xs text-slate-500">採用首頁相同卡片結構（含展開按鈕文字與 CTA）</div>
           </div>
-
-          <div class="soft p-4">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="font-black">常用顏色表</div>
-              <span class="text-xs text-slate-500">點一下自動複製「顏色名 + 色碼」</span>
-            </div>
-            <div id="colors" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-
-            <div class="mt-4 pt-3 border-t border-slate-200">
-              <div class="font-black mb-2">快速範例（可貼到 Summary/Bullets）</div>
-              <div class="text-sm text-slate-600 leading-6 space-y-2">
-                <div class="soft p-3">
-                  <div class="text-xs text-slate-500 mb-1">粗體 / 斜體 / 底線 / 換行</div>
-                  <div class="mono text-xs text-slate-700">&lt;b&gt;粗體&lt;/b&gt;　&lt;i&gt;斜體&lt;/i&gt;　&lt;u&gt;底線&lt;/u&gt;&lt;br&gt;</div>
-                </div>
-                <div class="soft p-3">
-                  <div class="text-xs text-slate-500 mb-1">紅色提醒 + 放大 + 置中</div>
-                  <div class="mono text-xs text-slate-700">&lt;span style="color:#e60000"&gt;紅色提醒&lt;/span&gt;<br>&lt;span style="font-size:18px"&gt;18px 放大&lt;/span&gt;<br>&lt;span style="text-align:center;display:block"&gt;置中&lt;/span&gt;</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+          <div class="text-xs text-slate-500">提示：需要顏色可用上方「常用顏色表」</div>
         </div>
 
+        <div class="p-4">
+          <div class="soft p-4">
+            <div id="preview"></div>
+          </div>
+        </div>
       </section>
+
     </div>
   </main>
 
@@ -176,7 +180,7 @@
           <ol class="list-decimal pl-5 space-y-1">
             <li>點 <b>載入伺服器</b>：讀取目前網站上的 <span class="mono">/news.json</span></li>
             <li>左側選擇公告 → 右側編輯內容</li>
-            <li>右下角會顯示「前台真實樣式」預覽</li>
+            <li>最下方會顯示「前台真實樣式」預覽</li>
             <li>完成後：<b>下載 news.json</b>（備份） 或 <b>一鍵上傳 GitHub</b>（更新網站）</li>
           </ol>
         </div>
@@ -211,7 +215,7 @@
               </div>
             </div>
           </div>
-          <p class="mt-2 text-xs text-slate-500">提示：如果你要在 bullets 內做「多行」，可用 <span class="mono">&lt;br&gt;</span>，或把內容拆成多個 bullet。</p>
+          <p class="mt-2 text-xs text-slate-500">提示：如果你要在 bullets 內做「多行」，可用 <span class="mono">&lt;br&gt;</span>，或把內容拆成多行（每行一段 bullet）。</p>
         </div>
 
         <div class="soft p-4">
@@ -226,7 +230,24 @@
     </div>
   </div>
 
-  <!-- GitHub Modal -->
+    <!-- Color Modal -->
+  <div class="modal" id="colorModal" role="dialog" aria-modal="true">
+    <div class="overlay" data-close="color"></div>
+    <div class="panel">
+      <header>
+        <div>
+          <div class="font-black">常用顏色表</div>
+          <div class="text-xs text-slate-500">點一下自動複製「顏色名 + 色碼」</div>
+        </div>
+        <button class="btn" data-close="color">關閉</button>
+      </header>
+      <div class="body">
+        <div id="colorsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"></div>
+      </div>
+    </div>
+  </div>
+
+<!-- GitHub Modal -->
   <div class="modal" id="githubModal" role="dialog" aria-modal="true">
     <div class="overlay" data-close="github"></div>
     <div class="panel">
@@ -308,7 +329,8 @@
         <pre id="jsonView" class="mono text-xs bg-slate-900 text-slate-100 rounded-xl p-4 overflow-auto max-h-[72vh]"></pre>
       </div>
     </div>
-  
+  </div>
+
   <!-- Import Modal -->
   <div class="modal" id="importModal" role="dialog" aria-modal="true">
     <div class="overlay" data-close="import"></div>
@@ -401,8 +423,8 @@
     el.className = 'toast-item';
     el.textContent = msg;
     host.appendChild(el);
-    setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(6px)'; el.style.transition='all .25s'; }, 2200);
-    setTimeout(()=>{ el.remove(); }, 2550);
+    setTimeout(()=>{ el.style.opacity = '0'; el.style.transform='translateY(6px)'; el.style.transition='all .25s'; }, 3800);
+    setTimeout(()=>{ el.remove(); }, 4200);
   }
 
   function escapeHtml(str=''){
@@ -440,6 +462,31 @@
     if(!it.cta.text) it.cta.text = '';
     if(!it.cta.href) it.cta.href = '';
     return it;
+  }
+
+
+  // ---------- Bullets helpers (bulk editor: one line = one bullet) ----------
+  function normalizeBulletLine(line){
+    let v = String(line||'').trim();
+    if(!v) return '';
+    v = v.replace(/^([•\-\*•])\s+/, '');
+    v = v.replace(/^\d+(?:\.|\))\s+/, '');
+    return v.trim();
+  }
+
+  function parseBulletsText(text){
+    return String(text||'')
+      .split(/\r?\n/)
+      .map(normalizeBulletLine)
+      .filter(Boolean);
+  }
+
+  function bulletsToText(bullets){
+    return (Array.isArray(bullets) ? bullets : []).map(x=>String(x||'')).join('\n');
+  }
+
+  function normalizeBulletsText(text){
+    return parseBulletsText(text).join('\n');
   }
 
   function sortItems(items){
@@ -499,10 +546,15 @@
   }
 
   function saveToLocal(){
-    const payload = { items: state.items, selectedId: state.selectedId };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    setDirty(false);
-    toast('已暫存到瀏覽器（localStorage）');
+    try{
+      const payload = { items: state.items, selectedId: state.selectedId };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      setDirty(false);
+      toast('已暫存到瀏覽器（localStorage）');
+    }catch(e){
+      console.warn(e);
+      toast('瀏覽器阻擋 localStorage（無法暫存）');
+    }
   }
 
   function restoreLocal(){
@@ -657,17 +709,19 @@
                 <option value="text" ${it.bulletsFormat==='text'?'selected':''}>純文字</option>
                 <option value="html" ${it.bulletsFormat!=='text'?'selected':''}>HTML</option>
               </select>
-              <button class="btn btn-ghost text-sm" id="btnAddBullet">+ 新增 Bullet</button>
+              <button class="btn btn-ghost text-sm" id="btnBulletsClean" title="去空行/去符號（•、-、1.）">整理</button>
             </div>
           </div>
 
-          <div class="space-y-2" id="bulletsBox"></div>
+          ${textarea('Bullets（每行一段）', 'f_bulletsText', bulletsToText(it.bullets), { rows:10, placeholder:'一行 = 一個 bullet\n可直接貼整段文字（• / - / 1. 開頭會自動整理）', hint:'想在同一 bullet 內換行：HTML 模式可用 <br>。' })}
 
           <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             ${field('展開按鈕文字 summaryButtonText', 'f_btnText', it.summaryButtonText, { placeholder:'查看內容', hint:'首頁展開按鈕上的文字' })}
             <div class="text-xs text-slate-500 self-end">提示：Bullets 空白時，預覽不會顯示展開區（除非你有填 CTA）。</div>
           </div>
         </div>
+
+
 
         <div class="soft p-4">
           <div class="font-black mb-2">CTA（按鈕）</div>
@@ -679,74 +733,18 @@
       </div>
     `;
 
-    // render bullets
-    const box = $('#bulletsBox');
-    box.innerHTML = (it.bullets || []).map((b, idx) => `
-      <div class="soft p-3">
-        <div class="flex items-center justify-between gap-2 mb-2">
-          <div class="text-xs text-slate-500">Bullet #${idx+1}</div>
-          <div class="flex items-center gap-1">
-            <button class="btn btn-ghost text-xs" data-up="${idx}" title="上移">↑</button>
-            <button class="btn btn-ghost text-xs" data-down="${idx}" title="下移">↓</button>
-            <button class="btn btn-ghost text-xs text-red-700" data-del="${idx}" title="刪除">刪除</button>
-          </div>
-        </div>
-        <textarea data-bullet="${idx}" rows="2" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">${escapeHtml(b||'')}</textarea>
-      </div>
-    `).join('') || `<div class="text-sm text-slate-500">目前沒有 bullets。點右上 <b>+ 新增 Bullet</b></div>`;
+    // bulk bullets: clean helper
+    const btnClean = $('#btnBulletsClean');
+    if(btnClean){
+      btnClean.addEventListener('click', () => {
+        const el = $('#f_bulletsText');
+        if(!el) return;
+        el.value = normalizeBulletsText(el.value);
+        onEditorChange('f_bulletsText');
+        toast('已整理 Bullets（去空行/去符號）');
+      });
+    }
 
-    // wire up form changes
-    const ids = ['f_id','f_type','f_badge','f_pinned','f_title','f_period','f_startsAt','f_endsAt','f_summaryFormat','f_summary','f_bulletsFormat','f_btnText','f_ctaText','f_ctaHref'];
-    ids.forEach(id => {
-      const el = $('#'+id);
-      if(!el) return;
-      const ev = (el.type === 'checkbox' || el.tagName === 'SELECT') ? 'change' : 'input';
-      el.addEventListener(ev, () => onEditorChange(id));
-    });
-
-    // bullets change
-    $$('[data-bullet]').forEach(t => t.addEventListener('input', () => {
-      const idx = Number(t.dataset.bullet);
-      const cur = findSelected();
-      cur.bullets[idx] = t.value;
-      setDirty(true);
-      renderPreview();
-    }));
-
-    $$('[data-del]').forEach(b => b.addEventListener('click', () => {
-      const idx = Number(b.dataset.del);
-      const cur = findSelected();
-      cur.bullets.splice(idx,1);
-      setDirty(true);
-      renderEditor();
-      renderPreview();
-      renderList();
-    }));
-    $$('[data-up]').forEach(b => b.addEventListener('click', () => {
-      const idx = Number(b.dataset.up);
-      const cur = findSelected();
-      if(idx<=0) return;
-      const tmp = cur.bullets[idx-1]; cur.bullets[idx-1]=cur.bullets[idx]; cur.bullets[idx]=tmp;
-      setDirty(true);
-      renderEditor(); renderPreview(); renderList();
-    }));
-    $$('[data-down]').forEach(b => b.addEventListener('click', () => {
-      const idx = Number(b.dataset.down);
-      const cur = findSelected();
-      if(idx>=cur.bullets.length-1) return;
-      const tmp = cur.bullets[idx+1]; cur.bullets[idx+1]=cur.bullets[idx]; cur.bullets[idx]=tmp;
-      setDirty(true);
-      renderEditor(); renderPreview(); renderList();
-    }));
-
-    $('#btnAddBullet').addEventListener('click', () => {
-      const cur = findSelected();
-      cur.bullets.push('');
-      setDirty(true);
-      renderEditor();
-      renderPreview();
-      renderList();
-    });
 
     $('#btnReId').addEventListener('click', () => {
       const cur = findSelected();
@@ -777,6 +775,7 @@
     it.summaryFormat = v('f_summaryFormat');
     it.summary = v('f_summary');
     it.bulletsFormat = v('f_bulletsFormat');
+    it.bullets = parseBulletsText(v('f_bulletsText'));
     it.summaryButtonText = v('f_btnText') || '查看內容';
     it.cta = it.cta || {text:'', href:''};
     it.cta.text = v('f_ctaText');
@@ -851,7 +850,8 @@
   // ---------- Actions ----------
   async function loadFromServer(){
     try{
-      const res = await fetch('/news.json?v=' + Date.now(), { cache:'no-store' });
+      toast('正在載入 news.json…');
+      const res = await fetch('news.json?v=' + Date.now(), { cache:'no-store' });
       if(!res.ok) throw new Error('載入失敗：' + res.status);
       const data = await res.json();
       if(!Array.isArray(data)) throw new Error('news.json 不是陣列格式');
@@ -863,6 +863,7 @@
     }catch(e){
       console.error(e);
       toast('載入失敗：' + (e.message || e));
+      if(location.protocol === 'file:') toast('你目前用 file:// 開啟，建議用「匯入 JSON」載入本機 news.json，或用已部署網址開啟。');
 
     }
   }
@@ -870,6 +871,7 @@
   let pendingImport = null;
 
   async function prepareImport(file){
+    toast('正在解析匯入檔案…');
     try{
       const text = await file.text();
       let data;
@@ -1145,6 +1147,7 @@
       if(which === 'json') hideModal('jsonModal');
       if(which === 'import') hideModal('importModal');
       if(which === 'delete') hideModal('deleteModal');
+      if(which === 'color') hideModal('colorModal');
     }));
   }
 
@@ -1165,7 +1168,7 @@
   ];
 
   function renderColors(){
-    const host = $('#colors');
+    const host = $('#colorsGrid');
     host.innerHTML = COLOR_PRESETS.map(c => `
       <button class="soft p-3 text-left hover:translate-y-[-1px] transition" data-color="${c.hex}" data-name="${escapeHtml(c.name)}">
         <div class="flex items-center justify-between gap-2">
@@ -1209,6 +1212,7 @@
   $('#btnDuplicate').addEventListener('click', duplicateSelected);
   $('#btnDelete').addEventListener('click', deleteSelected);
   $('#btnHelp').addEventListener('click', () => showModal('helpModal'));
+  $('#btnColors').addEventListener('click', () => showModal('colorModal'));
   $('#btnGithub').addEventListener('click', () => { showModal('githubModal'); loadGhSettings(); });
   $('#btnGhTest').addEventListener('click', ghTest);
   $('#btnGhUpload').addEventListener('click', ghUpload);
@@ -1235,6 +1239,15 @@
 
   wireModal();
   renderColors();
+
+  // env banner for file://
+  if(location.protocol === 'file:'){
+    const b = $('#envBanner');
+    if(b){ b.classList.remove('hidden'); }
+    const pick = $('#btnPickLocalNews');
+    if(pick){ pick.addEventListener('click', ()=> $('#fileImport').click()); }
+    toast('提示：你目前用 file:// 開啟，建議用「匯入 JSON」載入。');
+  }
 
   // restore
   const restored = restoreLocal();
