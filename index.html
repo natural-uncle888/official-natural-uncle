@@ -386,6 +386,338 @@
       color:#fca5a5;
     }
   </style>
+<style>
+/* =====================================
+   News UI refresh (2026-03)
+   - 解除「過度規格化」：更像雜誌/品牌公告卡
+   - 暗黑模式：深色卡片 + 亮字 + 琥珀點綴
+   - 提供 4 組按鈕/點綴色可選：gold / blue / green / minimal
+====================================== */
+
+#news{
+  --news-strong:#0b1220;
+  --news-muted:#475569;
+  --shell-bg: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,251,235,.78));
+  --shell-border: rgba(245,158,11,.28);
+  --head-bg: rgba(255,251,235,.85);
+  --item-bg: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,251,235,.72));
+  --item-border: rgba(245,158,11,.18);
+  --detail-bg: rgba(255,251,235,.70);
+  --detail-border: rgba(245,158,11,.18);
+}
+
+html.dark #news, body.dark #news, [data-theme="dark"] #news{
+  --news-strong:#f8fafc;
+  --news-muted: rgba(226,232,240,.82);
+  --shell-bg: linear-gradient(180deg, rgba(2,6,23,.88), rgba(15,23,42,.92));
+  --shell-border: rgba(251,191,36,.30);
+  --head-bg: rgba(2,6,23,.50);
+  --item-bg: linear-gradient(180deg, rgba(15,23,42,.78), rgba(2,6,23,.55));
+  --item-border: rgba(148,163,184,.22);
+  --detail-bg: rgba(2,6,23,.40);
+  --detail-border: rgba(148,163,184,.22);
+}
+
+#news .news-shell{
+  background: var(--shell-bg);
+  border:1px solid var(--shell-border);
+  border-radius: 22px;
+  box-shadow: 0 18px 55px rgba(2,6,23,.10);
+  overflow: hidden;
+}
+html.dark #news .news-shell, body.dark #news .news-shell, [data-theme="dark"] #news .news-shell{
+  box-shadow: 0 20px 70px rgba(0,0,0,.35);
+}
+
+#news .news-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--head-bg);
+  border-bottom:1px solid rgba(148,163,184,.18);
+}
+#news .news-head-left{ display:flex; align-items:center; gap:12px; min-width:0; }
+#news .news-bell{ font-size: 20px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.12)); }
+#news .news-head h2{
+  margin:0;
+  font-weight: 900;
+  letter-spacing: .2px;
+  color: var(--news-strong);
+  font-size: 18px;
+  line-height: 1.2;
+}
+#news .news-sub{
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--news-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#news .news-chip{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 9999px;
+  border:1px solid rgba(148,163,184,.22);
+  color: var(--news-strong);
+  background: rgba(255,255,255,.55);
+}
+html.dark #news .news-chip, body.dark #news .news-chip, [data-theme="dark"] #news .news-chip{
+  background: rgba(2,6,23,.35);
+  border-color: rgba(148,163,184,.22);
+}
+
+#news .news-body{ padding: 18px; display:flex; flex-direction:column; gap: 14px; }
+
+#news .news-item{
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border:1px solid var(--item-border);
+  background: var(--item-bg);
+  padding: 16px 16px 14px 18px;
+  box-shadow: 0 10px 28px rgba(2,6,23,.08);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+#news .news-item::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width: 5px;
+  background: var(--accent-grad, linear-gradient(180deg, #fbbf24, #f59e0b));
+  opacity: .95;
+}
+#news .news-item:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(2,6,23,.14);
+  border-color: rgba(251,191,36,.35);
+}
+html.dark #news .news-item:hover, body.dark #news .news-item:hover, [data-theme="dark"] #news .news-item:hover{
+  box-shadow: 0 18px 55px rgba(0,0,0,.38);
+}
+#news .news-item.is-open{
+  border-color: rgba(251,191,36,.40);
+}
+
+#news .news-top{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+#news .news-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  background: var(--badge-bg, rgba(245,158,11,.12));
+  border:1px solid var(--badge-border, rgba(245,158,11,.20));
+  color: var(--badge-text, #b45309);
+}
+html.dark #news .news-badge, body.dark #news .news-badge, [data-theme="dark"] #news .news-badge{
+  color: var(--badge-text, #fbbf24);
+}
+#news .news-pin{
+  font-size: 12px;
+  font-weight: 900;
+  padding: 5px 9px;
+  border-radius: 9999px;
+  background: rgba(148,163,184,.12);
+  border:1px solid rgba(148,163,184,.22);
+  color: var(--news-strong);
+}
+#news .news-kicker{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--news-muted);
+}
+
+#news .news-title{
+  font-weight: 950;
+  letter-spacing: -.2px;
+  color: var(--news-strong);
+  font-size: 17px;
+  line-height: 1.35;
+  margin: 0 0 8px;
+}
+#news .news-summary{
+  font-size: 14px;
+  color: var(--news-muted);
+  line-height: 1.65;
+}
+
+#news .news-actions{
+  margin-top: 12px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#news .news-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 10px 14px;
+  font-weight: 900;
+  font-size: 14px;
+  border:1px solid transparent;
+  transition: transform .14s ease, box-shadow .14s ease, filter .14s ease, background .14s ease, border-color .14s ease, color .14s ease;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+}
+#news .news-btn:hover{ transform: translateY(-1px); }
+#news .news-btn:active{ transform: translateY(0); }
+#news .news-btn .chev{ transition: transform .18s ease; }
+
+#news .news-btn--solid{
+  background: var(--solid-bg, linear-gradient(135deg, #fbbf24, #f59e0b));
+  color: var(--solid-text, #0b1220);
+  box-shadow: 0 12px 22px rgba(2,6,23,.16);
+}
+html.dark #news .news-btn--solid, body.dark #news .news-btn--solid, [data-theme="dark"] #news .news-btn--solid{
+  box-shadow: 0 14px 30px rgba(0,0,0,.45);
+}
+#news .news-btn--solid:hover{ filter: brightness(.98); }
+
+#news .news-btn--soft{
+  background: var(--soft-bg, rgba(245,158,11,.12));
+  border-color: var(--soft-border, rgba(245,158,11,.22));
+  color: var(--soft-text, #b45309);
+}
+html.dark #news .news-btn--soft, body.dark #news .news-btn--soft, [data-theme="dark"] #news .news-btn--soft{
+  color: var(--soft-text, #fbbf24);
+}
+
+#news .news-btn--outline{
+  background: transparent;
+  border-color: var(--outline-border, rgba(245,158,11,.40));
+  color: var(--outline-text, #b45309);
+}
+html.dark #news .news-btn--outline, body.dark #news .news-btn--outline, [data-theme="dark"] #news .news-btn--outline{
+  color: var(--outline-text, #fbbf24);
+}
+
+#news .news-btn--link{
+  background: transparent;
+  border:0;
+  padding: 0;
+  color: var(--soft-text, #b45309);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#news .news-btn--link:hover{ filter: brightness(.92); transform:none; }
+
+#news .news-detailbox{
+  margin-top: 12px;
+  background: var(--detail-bg);
+  border:1px solid var(--detail-border);
+  border-radius: 14px;
+  padding: 14px;
+}
+#news .news-detailbox.hidden{ display:none; }
+
+#news .news-bullets{
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+#news .news-bullets li{ margin: .35rem 0; color: var(--news-muted); }
+#news .news-bullets li::marker{ color: var(--accent, #f59e0b); }
+
+#news .news-empty{ color: var(--news-muted); font-size: 14px; padding: 6px 2px; }
+#news .news-error{ color: #fca5a5; font-size: 14px; padding: 6px 2px; }
+
+/* Toggle open state */
+#news .news-item.is-open .news-toggle .chev{ transform: rotate(180deg); }
+
+/* ----- Presets (per-card) ----- */
+#news .news-item[data-ui="gold"]{
+  --accent:#f59e0b; --accent2:#fbbf24;
+  --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
+  --solid-bg: linear-gradient(135deg, #fbbf24, #f59e0b);
+  --solid-text:#0b1220;
+  --soft-bg: rgba(245,158,11,.12);
+  --soft-border: rgba(245,158,11,.22);
+  --soft-text:#b45309;
+  --outline-border: rgba(245,158,11,.40);
+  --outline-text:#b45309;
+  --badge-bg: rgba(245,158,11,.12);
+  --badge-border: rgba(245,158,11,.20);
+  --badge-text:#b45309;
+}
+html.dark #news .news-item[data-ui="gold"], body.dark #news .news-item[data-ui="gold"], [data-theme="dark"] #news .news-item[data-ui="gold"]{
+  --soft-text:#fbbf24; --outline-text:#fbbf24; --badge-text:#fbbf24;
+}
+
+#news .news-item[data-ui="blue"]{
+  --accent:#3b82f6; --accent2:#60a5fa;
+  --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
+  --solid-bg: linear-gradient(135deg, #60a5fa, #2563eb);
+  --solid-text:#ffffff;
+  --soft-bg: rgba(59,130,246,.12);
+  --soft-border: rgba(59,130,246,.22);
+  --soft-text:#1d4ed8;
+  --outline-border: rgba(59,130,246,.40);
+  --outline-text:#1d4ed8;
+  --badge-bg: rgba(59,130,246,.12);
+  --badge-border: rgba(59,130,246,.20);
+  --badge-text:#1d4ed8;
+}
+html.dark #news .news-item[data-ui="blue"], body.dark #news .news-item[data-ui="blue"], [data-theme="dark"] #news .news-item[data-ui="blue"]{
+  --soft-text:#93c5fd; --outline-text:#93c5fd; --badge-text:#93c5fd;
+}
+
+#news .news-item[data-ui="green"]{
+  --accent:#10b981; --accent2:#34d399;
+  --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
+  --solid-bg: linear-gradient(135deg, #34d399, #059669);
+  --solid-text:#0b1220;
+  --soft-bg: rgba(16,185,129,.12);
+  --soft-border: rgba(16,185,129,.22);
+  --soft-text:#047857;
+  --outline-border: rgba(16,185,129,.40);
+  --outline-text:#047857;
+  --badge-bg: rgba(16,185,129,.12);
+  --badge-border: rgba(16,185,129,.20);
+  --badge-text:#047857;
+}
+html.dark #news .news-item[data-ui="green"], body.dark #news .news-item[data-ui="green"], [data-theme="dark"] #news .news-item[data-ui="green"]{
+  --soft-text:#6ee7b7; --outline-text:#6ee7b7; --badge-text:#6ee7b7;
+}
+
+#news .news-item[data-ui="minimal"]{
+  --accent:#94a3b8; --accent2:#cbd5e1;
+  --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
+  --solid-bg: linear-gradient(135deg, #334155, #0f172a);
+  --solid-text:#f8fafc;
+  --soft-bg: rgba(148,163,184,.12);
+  --soft-border: rgba(148,163,184,.22);
+  --soft-text:#334155;
+  --outline-border: rgba(148,163,184,.38);
+  --outline-text:#334155;
+  --badge-bg: rgba(148,163,184,.12);
+  --badge-border: rgba(148,163,184,.20);
+  --badge-text:#334155;
+}
+html.dark #news .news-item[data-ui="minimal"], body.dark #news .news-item[data-ui="minimal"], [data-theme="dark"] #news .news-item[data-ui="minimal"]{
+  --soft-text:#e2e8f0; --outline-text:#e2e8f0; --badge-text:#e2e8f0;
+}
+</style>
 <style>.btn {
   display: inline-block;
   padding: 10px 20px;
@@ -517,14 +849,19 @@ body.dark #offer-modal .offer-panel a,
 </div>
 </section>
 <section class="max-w-5xl mx-auto px-4 my-10" id="news">
-<div class="news-shell rounded-xl border border-amber-300 bg-amber-50/80 shadow-sm">
-<div class="news-head flex items-center gap-3 px-5 py-3 border-b border-amber-200 bg-amber-100 rounded-t-xl">
-<span class="text-xl">🔔</span>
-<h2 class="text-lg md:text-xl font-extrabold tracking-wide text-amber-800">最新消息｜公告</h2>
-<span class="ml-auto inline-block text-xs px-2 py-0.5 rounded bg-amber-600 text-white">NEW</span>
-</div>
-<div class="news-body p-5 space-y-4" id="news-list"></div>
-</div>
+  <div class="news-shell">
+    <div class="news-head">
+      <div class="news-head-left">
+        <span class="news-bell" aria-hidden="true">🔔</span>
+        <div style="min-width:0">
+          <h2>最新消息｜公告</h2>
+          <p class="news-sub">季節提醒・優惠活動・服務異動（不定期更新）</p>
+        </div>
+      </div>
+      <span class="news-chip">UPDATE</span>
+    </div>
+    <div class="news-body" id="news-list"></div>
+  </div>
 </section>
 <!-- 服務項目 -->
 <section class="max-w-6xl mx-auto px-4 py-12 reveal" id="services">
@@ -1018,10 +1355,21 @@ body.dark #offer-modal .offer-panel a,
     items.sort((a,b) => (b.pinned===true) - (a.pinned===true)
       || String(b.startsAt||'').localeCompare(String(a.startsAt||'')));
 
-    if (!items.length) { el.innerHTML = `<p class="news-empty text-sm muted">目前沒有公告</p>`; return; }
+    if (!items.length) { el.innerHTML = `<p class="news-empty">目前沒有公告</p>`; return; }
 
-    el.innerHTML = items.map(it => {
+        const PRESETS = {
+      gold:   { toggle:'soft',    cta:'solid' },
+      blue:   { toggle:'outline', cta:'solid' },
+      green:  { toggle:'soft',    cta:'solid' },
+      minimal:{ toggle:'link',    cta:'outline' },
+    };
+
+    el.innerHTML = items.map((it, idx) => {
       const badge = it.badge || (it.type === 'promo' ? '優' : '告');
+
+      const uiRaw = String(it.ui || it.uiTheme || it.theme || '').toLowerCase().trim();
+      const ui = (uiRaw && PRESETS[uiRaw]) ? uiRaw : 'gold';
+      const preset = PRESETS[ui];
 
       const summary = it.summary || '';
       const summaryHtml = summary
@@ -1043,41 +1391,69 @@ body.dark #offer-modal .offer-panel a,
           }</ul>`
         : '';
 
+      const safe = String(it.id || `ann-${idx}`).replace(/[^a-zA-Z0-9_-]/g,'_');
+      const panelId = `news_detail_${safe}`;
+
       const cta = it.cta?.href
-        ? `<a class="inline-flex items-center gap-1 text-sm font-medium text-white bg-blue-600 px-3 py-1.5 rounded hover:bg-blue-700 transition" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'了解更多')}</a>`
+        ? `<a class="news-btn news-btn--${preset.cta} news-cta" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'立即線上預約')}</a>`
         : '';
 
       const btnText = escapeHtml(it.summaryButtonText || '查看內容');
 
+      const toggle = bulletsHtml
+        ? `<button class="news-btn news-btn--${preset.toggle} news-toggle" type="button" data-target="${panelId}" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span class="news-toggle-text">${btnText}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 chev" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>`
+        : '';
+
+      const actions = (toggle || cta)
+        ? `<div class="news-actions">${toggle}${cta}</div>`
+        : '';
+
+      const detail = bulletsHtml
+        ? `<div class="news-detailbox hidden" id="${panelId}">${bulletsHtml}</div>`
+        : '';
+
       return `
-<article class="news-item rounded-lg border border-amber-200 bg-white p-4 md:p-5 shadow" data-ann-id="${escapeHtml(it.id||'')}">
-  <div class="flex items-center gap-2 mb-2">
-    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-600 text-white text-xs">${escapeHtml(badge)}</span>
-    <h3 class="font-bold" style="color:var(--text-strong)">${escapeHtml(it.title||'')}</h3>
-    ${it.pinned ? '<span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-600 text-white">PIN</span>' : ''}
+<article class="news-item" data-ann-id="${escapeHtml(it.id||'')}" data-ui="${ui}">
+  <div class="news-top">
+    <span class="news-badge">${escapeHtml(badge)}</span>
+    ${it.pinned ? '<span class="news-pin">置頂</span>' : ''}
+    ${it.period ? `<span class="news-kicker">${escapeHtml(it.period)}</span>` : ''}
   </div>
-  ${it.period ? `<p class="text-sm" style="color:var(--muted)">${escapeHtml(it.period)}</p>` : ''}
-  ${summaryHtml ? `<div class="mt-2 text-sm" style="color:var(--muted)">${summaryHtml}</div>` : ''}
-  ${(bulletsHtml || cta) ? `
-    <details class="mt-3">
-      <summary class="cursor-pointer list-none inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-        ${btnText}
-      </summary>
-      <div class="news-detailbox mt-3 rounded border border-amber-200 bg-amber-50 p-3">
-        ${bulletsHtml}
-        ${cta ? `<div class="mt-2">${cta}</div>` : ''}
-      </div>
-    </details>` : ''
-  }
+  <h3 class="news-title">${escapeHtml(it.title||'')}</h3>
+  ${summaryHtml ? `<div class="news-summary">${summaryHtml}</div>` : ''}
+  ${actions}
+  ${detail}
 </article>`;
     }).join('');
+
+    // Toggle handlers (once)
+    if(!el.dataset.newsBound){
+      el.dataset.newsBound = '1';
+      el.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.news-toggle');
+        if(!btn) return;
+        const target = btn.getAttribute('data-target');
+        const panel = document.getElementById(target);
+        if(!panel) return;
+        const card = btn.closest('.news-item');
+        const willOpen = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if(card) card.classList.toggle('is-open', willOpen);
+      });
+    }
   } catch (e) {
     console.error(e);
-    el.innerHTML = `<p class="news-error text-sm">公告載入失敗，請稍後再試。</p>`;
+    el.innerHTML = `<p class="news-error">公告載入失敗，請稍後再試。</p>`;
   }
 })();
 </script>
