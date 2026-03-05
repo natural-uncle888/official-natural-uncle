@@ -646,7 +646,8 @@ html.dark #news .news-btn--outline, body.dark #news .news-btn--outline, [data-th
 #news .news-item.is-open .news-toggle .chev{ transform: rotate(180deg); }
 
 /* ----- Presets (per-card) ----- */
-#news .news-item[data-ui="gold"]{
+#news .news-item[data-ui="gold"],
+#news .news-btn[data-ui="gold"]{
   --accent:#f59e0b; --accent2:#fbbf24;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -660,11 +661,12 @@ html.dark #news .news-btn--outline, body.dark #news .news-btn--outline, [data-th
   --badge-border: rgba(245,158,11,.20);
   --badge-text:#b45309;
 }
-html.dark #news .news-item[data-ui="gold"], body.dark #news .news-item[data-ui="gold"], [data-theme="dark"] #news .news-item[data-ui="gold"]{
+html.dark #news .news-item[data-ui="gold"], html.dark #news .news-btn[data-ui="gold"], body.dark #news .news-item[data-ui="gold"], body.dark #news .news-btn[data-ui="gold"], [data-theme="dark"] #news .news-item[data-ui="gold"], [data-theme="dark"] #news .news-btn[data-ui="gold"]{
   --soft-text:#fbbf24; --outline-text:#fbbf24; --badge-text:#fbbf24;
 }
 
-#news .news-item[data-ui="blue"]{
+#news .news-item[data-ui="blue"],
+#news .news-btn[data-ui="blue"]{
   --accent:#3b82f6; --accent2:#60a5fa;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #60a5fa, #2563eb);
@@ -678,11 +680,12 @@ html.dark #news .news-item[data-ui="gold"], body.dark #news .news-item[data-ui="
   --badge-border: rgba(59,130,246,.20);
   --badge-text:#1d4ed8;
 }
-html.dark #news .news-item[data-ui="blue"], body.dark #news .news-item[data-ui="blue"], [data-theme="dark"] #news .news-item[data-ui="blue"]{
+html.dark #news .news-item[data-ui="blue"], html.dark #news .news-btn[data-ui="blue"], body.dark #news .news-item[data-ui="blue"], body.dark #news .news-btn[data-ui="blue"], [data-theme="dark"] #news .news-item[data-ui="blue"], [data-theme="dark"] #news .news-btn[data-ui="blue"]{
   --soft-text:#93c5fd; --outline-text:#93c5fd; --badge-text:#93c5fd;
 }
 
-#news .news-item[data-ui="green"]{
+#news .news-item[data-ui="green"],
+#news .news-btn[data-ui="green"]{
   --accent:#10b981; --accent2:#34d399;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #34d399, #059669);
@@ -696,11 +699,12 @@ html.dark #news .news-item[data-ui="blue"], body.dark #news .news-item[data-ui="
   --badge-border: rgba(16,185,129,.20);
   --badge-text:#047857;
 }
-html.dark #news .news-item[data-ui="green"], body.dark #news .news-item[data-ui="green"], [data-theme="dark"] #news .news-item[data-ui="green"]{
+html.dark #news .news-item[data-ui="green"], html.dark #news .news-btn[data-ui="green"], body.dark #news .news-item[data-ui="green"], body.dark #news .news-btn[data-ui="green"], [data-theme="dark"] #news .news-item[data-ui="green"], [data-theme="dark"] #news .news-btn[data-ui="green"]{
   --soft-text:#6ee7b7; --outline-text:#6ee7b7; --badge-text:#6ee7b7;
 }
 
-#news .news-item[data-ui="minimal"]{
+#news .news-item[data-ui="minimal"],
+#news .news-btn[data-ui="minimal"]{
   --accent:#94a3b8; --accent2:#cbd5e1;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #334155, #0f172a);
@@ -714,7 +718,7 @@ html.dark #news .news-item[data-ui="green"], body.dark #news .news-item[data-ui=
   --badge-border: rgba(148,163,184,.20);
   --badge-text:#334155;
 }
-html.dark #news .news-item[data-ui="minimal"], body.dark #news .news-item[data-ui="minimal"], [data-theme="dark"] #news .news-item[data-ui="minimal"]{
+html.dark #news .news-item[data-ui="minimal"], html.dark #news .news-btn[data-ui="minimal"], body.dark #news .news-item[data-ui="minimal"], body.dark #news .news-btn[data-ui="minimal"], [data-theme="dark"] #news .news-item[data-ui="minimal"], [data-theme="dark"] #news .news-btn[data-ui="minimal"]{
   --soft-text:#e2e8f0; --outline-text:#e2e8f0; --badge-text:#e2e8f0;
 }
 </style>
@@ -1368,8 +1372,27 @@ body.dark #offer-modal .offer-panel a,
       const badge = it.badge || (it.type === 'promo' ? '優' : '告');
 
       const uiRaw = String(it.ui || it.uiTheme || it.theme || '').toLowerCase().trim();
-      const ui = (uiRaw && PRESETS[uiRaw]) ? uiRaw : 'gold';
-      const preset = PRESETS[ui];
+      const uiCard = (uiRaw && PRESETS[uiRaw]) ? uiRaw : 'gold';
+
+      const pickUi = (raw) => {
+        const k = String(raw||'').toLowerCase().trim();
+        return (k && PRESETS[k]) ? k : '';
+      };
+      const pickVariant = (raw) => {
+        const k = String(raw||'').toLowerCase().trim();
+        return (k && ['solid','soft','outline','link'].includes(k)) ? k : '';
+      };
+
+      const toggleUi = pickUi(it.toggleUi ?? it.uiToggle ?? it.toggleTheme ?? '');
+      const ctaUi = pickUi(it.ctaUi ?? it.uiCta ?? it.ctaTheme ?? '');
+
+      const effToggleUi = toggleUi || uiCard;
+      const effCtaUi = ctaUi || uiCard;
+
+      const toggleVariant = pickVariant(it.toggleVariant ?? it.toggleBtnVariant ?? it.toggleStyle ?? '') || (PRESETS[effToggleUi]?.toggle || 'soft');
+      const ctaVariant = pickVariant(it.ctaVariant ?? it.ctaBtnVariant ?? it.ctaStyle ?? '') || (PRESETS[effCtaUi]?.cta || 'solid');
+
+      const ui = uiCard;
 
       const summary = it.summary || '';
       const summaryHtml = summary
@@ -1395,13 +1418,13 @@ body.dark #offer-modal .offer-panel a,
       const panelId = `news_detail_${safe}`;
 
       const cta = it.cta?.href
-        ? `<a class="news-btn news-btn--${preset.cta} news-cta" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'立即線上預約')}</a>`
+        ? `<a class="news-btn news-btn--${ctaVariant} news-cta" data-ui="${effCtaUi}" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'立即線上預約')}</a>`
         : '';
 
       const btnText = escapeHtml(it.summaryButtonText || '查看內容');
 
       const toggle = bulletsHtml
-        ? `<button class="news-btn news-btn--${preset.toggle} news-toggle" type="button" data-target="${panelId}" aria-expanded="false">
+        ? `<button class="news-btn news-btn--${toggleVariant} news-toggle" data-ui="${effToggleUi}" type="button" data-target="${panelId}" aria-expanded="false">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

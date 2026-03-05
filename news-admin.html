@@ -100,7 +100,8 @@
 #preview .news-btn .chev{ transition: transform .18s ease; }
 
 /* Presets */
-#preview .news-item[data-ui="gold"]{
+#preview .news-item[data-ui="gold"],
+#preview .news-btn[data-ui="gold"]{
   --accent:#f59e0b; --accent2:#fbbf24;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -114,7 +115,8 @@
   --badge-border: rgba(245,158,11,.20);
   --badge-text:#b45309;
 }
-#preview .news-item[data-ui="blue"]{
+#preview .news-item[data-ui="blue"],
+#preview .news-btn[data-ui="blue"]{
   --accent:#3b82f6; --accent2:#60a5fa;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #60a5fa, #2563eb);
@@ -128,7 +130,8 @@
   --badge-border: rgba(59,130,246,.20);
   --badge-text:#1d4ed8;
 }
-#preview .news-item[data-ui="green"]{
+#preview .news-item[data-ui="green"],
+#preview .news-btn[data-ui="green"]{
   --accent:#10b981; --accent2:#34d399;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #34d399, #059669);
@@ -142,7 +145,8 @@
   --badge-border: rgba(16,185,129,.20);
   --badge-text:#047857;
 }
-#preview .news-item[data-ui="minimal"]{
+#preview .news-item[data-ui="minimal"],
+#preview .news-btn[data-ui="minimal"]{
   --accent:#94a3b8; --accent2:#cbd5e1;
   --accent-grad: linear-gradient(180deg, var(--accent2), var(--accent));
   --solid-bg: linear-gradient(135deg, #334155, #0f172a);
@@ -568,6 +572,18 @@
     if(!it.cta.text) it.cta.text = '';
     if(!it.cta.href) it.cta.href = '';
     if(!it.ui) it.ui = 'gold'; // gold | blue | green | minimal
+
+    // Per-button customization (optional)
+    if(it.toggleUi == null && it.uiToggle != null) it.toggleUi = it.uiToggle;
+    if(it.ctaUi == null && it.uiCta != null) it.ctaUi = it.uiCta;
+    if(it.toggleVariant == null && it.toggleStyle != null) it.toggleVariant = it.toggleStyle;
+    if(it.ctaVariant == null && it.ctaStyle != null) it.ctaVariant = it.ctaStyle;
+
+    if(it.toggleUi == null) it.toggleUi = '';
+    if(it.ctaUi == null) it.ctaUi = '';
+    if(it.toggleVariant == null) it.toggleVariant = '';
+    if(it.ctaVariant == null) it.ctaVariant = '';
+
     return it;
   }
 
@@ -779,7 +795,51 @@
                 <option value="green" ${it.ui==='green'?'selected':''}>LINE 綠</option>
                 <option value="minimal" ${it.ui==='minimal'?'selected':''}>極簡灰</option>
               </select>
-              <div class="mt-1 text-xs text-slate-500">只影響此則公告卡片的點綴色 / 按鈕樣式</div>
+              <div class="mt-1 text-xs text-slate-500">只影響此則公告卡片的點綴色（徽章/左側色條/清單點）</div>
+            </label>
+
+            <label class="block">
+              <div class="text-xs text-slate-500 mb-1">展開按鈕配色（可不同）</div>
+              <select id="f_toggleUi" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+                <option value="" ${(!it.toggleUi ? 'selected' : '')}>跟卡片相同（預設）</option>
+                <option value="gold" ${it.toggleUi==='gold'?'selected':''}>品牌琥珀</option>
+                <option value="blue" ${it.toggleUi==='blue'?'selected':''}>信任藍</option>
+                <option value="green" ${it.toggleUi==='green'?'selected':''}>LINE 綠</option>
+                <option value="minimal" ${it.toggleUi==='minimal'?'selected':''}>極簡灰</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <div class="text-xs text-slate-500 mb-1">CTA 按鈕配色（可不同）</div>
+              <select id="f_ctaUi" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+                <option value="" ${(!it.ctaUi ? 'selected' : '')}>跟卡片相同（預設）</option>
+                <option value="gold" ${it.ctaUi==='gold'?'selected':''}>品牌琥珀</option>
+                <option value="blue" ${it.ctaUi==='blue'?'selected':''}>信任藍</option>
+                <option value="green" ${it.ctaUi==='green'?'selected':''}>LINE 綠</option>
+                <option value="minimal" ${it.ctaUi==='minimal'?'selected':''}>極簡灰</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <div class="text-xs text-slate-500 mb-1">展開按鈕形式</div>
+              <select id="f_toggleVariant" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+                <option value="" ${(!it.toggleVariant ? 'selected' : '')}>自動（建議）</option>
+                <option value="solid" ${it.toggleVariant==='solid'?'selected':''}>實心 solid</option>
+                <option value="soft" ${it.toggleVariant==='soft'?'selected':''}>柔和 soft</option>
+                <option value="outline" ${it.toggleVariant==='outline'?'selected':''}>外框 outline</option>
+                <option value="link" ${it.toggleVariant==='link'?'selected':''}>連結 link</option>
+              </select>
+            </label>
+
+            <label class="block">
+              <div class="text-xs text-slate-500 mb-1">CTA 按鈕形式</div>
+              <select id="f_ctaVariant" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200">
+                <option value="" ${(!it.ctaVariant ? 'selected' : '')}>自動（建議）</option>
+                <option value="solid" ${it.ctaVariant==='solid'?'selected':''}>實心 solid</option>
+                <option value="soft" ${it.ctaVariant==='soft'?'selected':''}>柔和 soft</option>
+                <option value="outline" ${it.ctaVariant==='outline'?'selected':''}>外框 outline</option>
+                <option value="link" ${it.ctaVariant==='link'?'selected':''}>連結 link</option>
+              </select>
             </label>
             <label class="block">
               <div class="text-xs text-slate-500 mb-1">Pinned（置頂）</div>
@@ -885,6 +945,10 @@
     it.type = v('f_type');
     it.badge = v('f_badge').trim();
     it.ui = v('f_ui') || 'gold';
+    it.toggleUi = v('f_toggleUi') || '';
+    it.ctaUi = v('f_ctaUi') || '';
+    it.toggleVariant = v('f_toggleVariant') || '';
+    it.ctaVariant = v('f_ctaVariant') || '';
     it.pinned = c('f_pinned');
     it.title = v('f_title');
     it.period = v('f_period');
@@ -922,8 +986,27 @@
     const badge = it.badge || (it.type === 'promo' ? '優' : '告');
 
     const uiRaw = String(it.ui || '').toLowerCase().trim();
-    const ui = (uiRaw && PRESETS[uiRaw]) ? uiRaw : 'gold';
-    const preset = PRESETS[ui];
+    const uiCard = (uiRaw && PRESETS[uiRaw]) ? uiRaw : 'gold';
+
+    const pickUi = (raw) => {
+      const k = String(raw||'').toLowerCase().trim();
+      return (k && PRESETS[k]) ? k : '';
+    };
+    const pickVariant = (raw) => {
+      const k = String(raw||'').toLowerCase().trim();
+      return (k && ['solid','soft','outline','link'].includes(k)) ? k : '';
+    };
+
+    const toggleUi = pickUi(it.toggleUi ?? it.uiToggle ?? '');
+    const ctaUi = pickUi(it.ctaUi ?? it.uiCta ?? '');
+
+    const effToggleUi = toggleUi || uiCard;
+    const effCtaUi = ctaUi || uiCard;
+
+    const toggleVariant = pickVariant(it.toggleVariant ?? it.toggleStyle ?? '') || (PRESETS[effToggleUi]?.toggle || 'soft');
+    const ctaVariant = pickVariant(it.ctaVariant ?? it.ctaStyle ?? '') || (PRESETS[effCtaUi]?.cta || 'solid');
+
+    const ui = uiCard;
 
     const fmtSummary = (it.summaryFormat === 'text')
       ? escapeHtml(it.summary||'').replaceAll('\\n','<br>')
@@ -943,13 +1026,13 @@
     const panelId = `pv_detail_${safe}`;
 
     const cta = (it.cta?.href)
-      ? `<a class="news-btn news-btn--${preset.cta} news-cta" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'立即線上預約')}</a>`
+      ? `<a class="news-btn news-btn--${ctaVariant} news-cta" data-ui="${effCtaUi}" href="${escapeHtml(it.cta.href)}" target="_blank" rel="noopener">${escapeHtml(it.cta.text||'立即線上預約')}</a>`
       : '';
 
     const btnText = escapeHtml(it.summaryButtonText || '查看內容');
 
     const toggle = bulletsHtml
-      ? `<button class="news-btn news-btn--${preset.toggle} news-toggle" type="button" data-target="${panelId}" aria-expanded="false">
+      ? `<button class="news-btn news-btn--${toggleVariant} news-toggle" data-ui="${effToggleUi}" type="button" data-target="${panelId}" aria-expanded="false">
           <span class="news-toggle-text">${btnText}</span>
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 chev" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -1379,6 +1462,18 @@
 
   $('#btnSort').addEventListener('click', () => { toast('目前固定：PIN → startsAt → title'); });
   $('#q').addEventListener('input', renderList);
+
+  // Live editor binding: any field with id starting with f_ will update state + preview
+  const editorHost = $('#editor');
+  if(editorHost){
+    const handler = (ev) => {
+      const t = ev.target;
+      if(!t || !t.id || !t.id.startsWith('f_')) return;
+      onEditorChange(t.id);
+    };
+    editorHost.addEventListener('input', handler);
+    editorHost.addEventListener('change', handler);
+  }
 
   $('#btnJsonView').addEventListener('click', () => {
     const payload = sortItems(state.items).map(normalizeItem);
