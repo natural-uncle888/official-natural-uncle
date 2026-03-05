@@ -321,6 +321,22 @@
     .ba input[type="range"]::-moz-range-thumb{
       width:20px; height:20px; border:none; border-radius:9999px; background:var(--accent);
     }
+
+    /* =====================================
+       News block contrast fix (dark mode)
+       - 公告區塊維持淺色卡片背景（琥珀色系）
+       - 但在暗黑模式下，站台全域文字變為亮色，
+         會導致公告卡片上的標題/摘要（使用 CSS 變數）變成白字看不見
+       - 這裡只針對 #news 區塊把文字相關變數覆寫回「淺色字系」
+    ====================================== */
+    body.dark #news{
+      color:#0b1220;
+      --text:#0b1220;
+      --text-strong:#0b1220;
+      --muted:#475569;
+    }
+    body.dark #news ul{ margin-top:.5rem; padding-left:1.25rem; list-style:disc; }
+    body.dark #news li{ margin:.25rem 0; }
   </style>
 <style>.btn {
   display: inline-block;
@@ -666,7 +682,7 @@ body.dark #offer-modal .offer-panel a,
 <!-- Footer -->
 <footer class="bg-white border-t">
 <div class="max-w-6xl mx-auto px-4 py-8 text-sm muted flex items-center gap-3">
-<img alt="" class="h-10 md:h-12 w-auto opacity-80 dark:opacity-90" height="96" loading="lazy" src="logo-mark.png" width="96"/>
+<img alt="" class="h-10 md:h-12 w-auto opacity-80 dark:opacity-90" height="96" loading="lazy" src="logo-mark.JPG" width="96"/>
 <span>© <span id="year"></span> 自然大叔 Natural Uncle｜統編：88537528</span>
 </div>
 </footer>
