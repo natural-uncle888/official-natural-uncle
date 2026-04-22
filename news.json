@@ -1,5 +1,40 @@
 [
   {
+    "type": "announce",
+    "pinned": true,
+    "badge": "NEW",
+    "ui": "blue",
+    "title": "清洗旺季預約公告｜揪團更快安排",
+    "period": "",
+    "startsAt": "2026-04-22",
+    "endsAt": "",
+    "summaryButtonText": "查看排程說明",
+    "summaryFormat": "html",
+    "bulletsFormat": "html",
+    "summary": "隨著清洗旺季到來，預約需求持續增加，<br>\n目前排程將依「數量優先、區域集中」原則安排。<br><br>\n\n<span style=\"color:#d46b08;\"><b>揪團預約更容易安排！</b></span><br>\n3 台以上清洗案件將優先安排時段，<br>\n建議可與親友或鄰居一同預約，提高排程效率。<br><br>",
+    "bullets": [
+      "<b>📌 旺季排程原則</b><br>",
+      "同一地點 3 台（含）以上清洗，優先安排完整時段<br>",
+      "單台或 1～2 台案件，將視行程穿插空檔安排<br>",
+      "同區域顧客，優先協調集中同日施作（需時間可配合）<br><br>",
+      "<b>📌 營運說明</b><br>",
+      "旺季期間因預約量增加，並考量人力與路線調度，<br>",
+      "單台清洗案件可能無法立即安排確切服務時段，敬請見諒。<br><br>",
+      "<b>📌 預約建議</b><br>",
+      "建議可邀請鄰居或親友一同預約，<br>",
+      "若累積 3～5 台以上，將有助於優先安排與時段媒合。"
+    ],
+    "cta": {
+      "text": "立即預約清洗",
+      "href": "https://uncle-reservation-platform.netlify.app"
+    },
+    "id": "ann-b2ffda74-db2b-433b-b531-bf875ef7e85a",
+    "toggleUi": "",
+    "ctaUi": "",
+    "toggleVariant": "",
+    "ctaVariant": ""
+  },
+  {
     "id": "ann-73ae6ace-81b4-4f56-8561-f801687e343f",
     "type": "announcement",
     "pinned": true,
@@ -22,7 +57,12 @@
     "cta": {
       "text": "立即領取優惠",
       "href": "https://lin.ee/uWxrnKM"
-    }
+    },
+    "ui": "gold",
+    "toggleUi": "",
+    "ctaUi": "",
+    "toggleVariant": "",
+    "ctaVariant": ""
   },
   {
     "id": "ann-d1db3519-a35e-4954-b602-68eaf7eb3e9d",
@@ -49,7 +89,12 @@
     "cta": {
       "text": "✅ 立即加入 LINE 預約",
       "href": "https://line.me/R/ti/p/@uncle888"
-    }
+    },
+    "ui": "gold",
+    "toggleUi": "",
+    "ctaUi": "",
+    "toggleVariant": "",
+    "ctaVariant": ""
   },
   {
     "id": "ann-3171caee-ced6-4440-9882-5f6d174f66d5",
@@ -74,6 +119,11 @@
       "text": "立即線上預約",
       "href": "https://uncle-reservation-platform.netlify.app"
     },
-    "bulletsFormat": "html"
+    "bulletsFormat": "html",
+    "ui": "gold",
+    "toggleUi": "",
+    "ctaUi": "",
+    "toggleVariant": "",
+    "ctaVariant": ""
   }
 ]
