@@ -2,6 +2,36 @@
   {
     "type": "announce",
     "pinned": true,
+    "badge": "中秋佳節",
+    "ui": "green",
+    "title": "🌕 中秋佳節｜自然大叔祝您月圓人團圓",
+    "period": "中秋佳節・感謝一路相伴",
+    "startsAt": "2026-09-25",
+    "endsAt": "2026-09-30",
+    "summaryButtonText": "查看祝福",
+    "summaryFormat": "html",
+    "bulletsFormat": "html",
+    "summary": "<div style=\"line-height:1.9;\">\n  <p><strong>🌕 中秋佳節愉快</strong></p>\n\n  <p>\n    一年一度的中秋佳節到來，<br>\n    在這個象徵團圓與幸福的日子裡，<br>\n    <strong>自然大叔 Natural Uncle</strong>\n    感謝每一位一路以來支持、信任我們的朋友與客戶。\n  </p>\n\n  <p>\n    因為有你們的肯定與鼓勵，<br>\n    讓我們能持續用心做好每一次服務，<br>\n    把細心、安心與專業帶進每一個家庭。\n  </p>\n\n  <p>\n    願這一輪明月，<br>\n    為您與家人帶來幸福、平安與團圓。\n  </p>\n\n  <p>\n    🌕 月圓人團圓<br>\n    🏡 闔家平安健康<br>\n    ✨ 事事順心圓滿<br>\n    ❤️ 幸福喜樂常伴\n  </p>\n\n  <p>\n    <strong>自然大叔 Natural Uncle</strong><br>\n    敬祝您與家人<br>\n    <strong>中秋佳節愉快！</strong>\n  </p>\n</div>",
+    "bullets": [
+      "🌕 月圓人團圓，珍惜每一次相聚的時光",
+      "🏡 闔家平安健康，日日安心順心",
+      "✨ 事事圓滿如意，好運與幸福常伴",
+      "❤️ 感謝每一位客戶與朋友一路以來的支持與信任",
+      "🥮 自然大叔祝大家中秋佳節愉快"
+    ],
+    "cta": {
+      "text": "自然大叔Line",
+      "href": "https://lin.ee/uWxrnKM"
+    },
+    "id": "ann-25647c20-6653-4953-a663-8511e2165ffd",
+    "toggleUi": "",
+    "ctaUi": "",
+    "toggleVariant": "",
+    "ctaVariant": ""
+  },
+  {
+    "type": "announce",
+    "pinned": true,
     "badge": "NEW",
     "ui": "green",
     "title": "端午佳節｜自然大叔祝您平安健康",
