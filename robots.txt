@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin-news.html
+Disallow: /news-admin.html
+
+Sitemap: https://naturaluncle.com/sitemap.xml

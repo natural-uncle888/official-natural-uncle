@@ -50,7 +50,7 @@
     ],
     "cta": {
       "text": "預約清洗",
-      "href": "https://uncle-reservation-platform.netlify.app"
+      "href": "https://booking.naturaluncle.com/"
     },
     "id": "ann-190bb0e8-22fb-4dc4-bbaf-fd75d158fb80",
     "toggleUi": "gold",
@@ -147,7 +147,7 @@
     ],
     "cta": {
       "text": "立即預約清洗",
-      "href": "https://uncle-reservation-platform.netlify.app"
+      "href": "https://booking.naturaluncle.com/"
     },
     "id": "ann-b2ffda74-db2b-433b-b531-bf875ef7e85a",
     "toggleUi": "",
@@ -176,7 +176,7 @@
     ],
     "cta": {
       "text": "立即線上預約",
-      "href": "https://uncle-reservation-platform.netlify.app"
+      "href": "https://booking.naturaluncle.com/"
     },
     "bulletsFormat": "html",
     "ui": "gold",
