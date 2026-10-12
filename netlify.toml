@@ -1,10 +1,7 @@
-[build]
-  command = ""
-  publish = "."
-
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-
-[functions."*"]
-  node_version = "18"
+# 自然大叔官方網站：舊 Netlify 網址永久轉址到正式網域
+# 保留原路徑，例如 /pricing.html -> https://naturaluncle.com/pricing.html
+[[redirects]]
+  from = "https://natural-uncle-official.netlify.app/*"
+  to = "https://naturaluncle.com/:splat"
+  status = 301
+  force = true
